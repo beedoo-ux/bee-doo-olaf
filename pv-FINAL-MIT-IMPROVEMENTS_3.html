@@ -646,7 +646,9 @@
           </div>
           <div class="param-item">
             <label>PV-Eigenverbrauch WP <span id="wp_ev_pct_label" style="color:var(--gold);font-weight:700;">40 %</span></label>
-            <input type="range" id="wp_eigenverbrauch_quote" min="30" max="60" step="5" value="40" style="width:100%;accent-color:#F0E15A;cursor:pointer;height:6px;margin-top:8px;">
+            <input type="range" id="wp_eigenverbrauch_quote" min="30" max="60" step="5" value="40"
+              oninput="this.nextElementSibling.querySelector('#wp_ev_pct_label') && (document.getElementById('wp_ev_pct_label').textContent=this.value+' %'); _evQuote=parseInt(this.value); updateWP(); update();"
+              style="width:100%;accent-color:#F0E15A;cursor:pointer;height:6px;margin-top:8px;">
             <div class="unit">Anteil WP-Strombedarf aus PV (30–60 %) <span id="ev_hint" style="color:#EF4444;display:none;">· Erst PV-Produktion eingeben</span></div>
           </div>
 
