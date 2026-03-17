@@ -2135,6 +2135,7 @@ for (var wi=0; wi<wpInputs.length; wi++) {
 document.getElementById('wp_eigenverbrauch_quote').addEventListener('input', function() {
   document.getElementById('wp_ev_pct_label').textContent = this.value + ' %';
   updateWP();
+  update();
 });
 
 // ============================================================
