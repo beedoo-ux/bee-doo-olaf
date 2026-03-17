@@ -1302,7 +1302,7 @@ function update() {
     var jaz         = parseFloat(document.getElementById('wp_jaz').value)||3.5;
     var wp_verbrauch= parseFloat(document.getElementById('wp_verbrauch').value)||cfg_wp.defaultVerbrauch;
     var wp_rate_b   = parseFloat(document.getElementById('wp_rate').value)||120;
-    var wp_ev_quote = (parseFloat(document.getElementById('wp_eigenverbrauch_quote').value)||40) / 100;
+    var wp_ev_quote = (_evQuote || 40) / 100;
     var wp_verbrauchKwh = cfg_wp.kwh_pro_einheit ? wp_verbrauch * cfg_wp.kwh_pro_einheit : wp_verbrauch;
     var nutzwaerme_wp   = wp_verbrauchKwh * cfg_wp.wirkungsgrad;
     var wp_strombedarf  = nutzwaerme_wp / jaz;
@@ -1926,7 +1926,7 @@ function updateWP() {
   var wpStromBedarf = nutzwaerme / jaz;
 
   // PV-Eigenverbrauch Quote aus Slider — aber max. verfügbarer PV-Überschuss nach Haushalt
-  var wp_ev_q  = (parseFloat(document.getElementById('wp_eigenverbrauch_quote').value)||40) / 100;
+  var wp_ev_q  = (_evQuote || 40) / 100;
   var pv_feed_verfuegbar = Math.max(0, pv_prod_wp - eigenverbrauch_kwh);
   var pvAnteil = Math.min(wpStromBedarf * wp_ev_q, pv_feed_verfuegbar);
   var restStromWP  = wpStromBedarf - pvAnteil;
@@ -2055,7 +2055,7 @@ function updateWP() {
   var cons_be      = parseFloat(document.getElementById('consumption').value)||7000;
   var ev_be        = calcEVHaushalt(pv_prod_be, cons_be);
   var feed_base_be = pv_prod_be - ev_be;
-  var wp_ev_q_be   = (parseFloat(document.getElementById('wp_eigenverbrauch_quote').value)||40) / 100;
+  var wp_ev_q_be   = (_evQuote || 40) / 100;
   var pv_fuer_wp_be = (nutzwaerme / jaz) * wp_ev_q_be;
   var feedJahrKorr = Math.max(0, pv_feed_verfuegbar - pvAnteil) * feed_rate_be;
 
@@ -2127,13 +2127,15 @@ function updateBreakEven(heizMonat, wpRate, wpKwhJahr, feedJahrKorr) {
 }
 
 // WP-Inputs auch bei update() mitrechnen
-var wpInputs = document.querySelectorAll('#wp_inputs input');
+var wpInputs = document.querySelectorAll('#wp_inputs input:not(#wp_eigenverbrauch_quote)');
 for (var wi=0; wi<wpInputs.length; wi++) {
   wpInputs[wi].addEventListener('input', function() { updateWP(); update(); });
 }
-// PV-Eigenverbrauch Quote Label live
+// PV-Eigenverbrauch Slider — Label + volle Neuberechnung
+var _evQuote = 40;
 document.getElementById('wp_eigenverbrauch_quote').addEventListener('input', function() {
-  document.getElementById('wp_ev_pct_label').textContent = this.value + ' %';
+  _evQuote = parseInt(this.value);
+  document.getElementById('wp_ev_pct_label').textContent = _evQuote + ' %';
   updateWP();
   update();
 });
