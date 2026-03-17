@@ -1186,37 +1186,7 @@
 
   </div>
 
-  <!-- STROMPREIS SZENARIO -->
-  <div class="kontext-card" id="card_szenario">
-    <div class="section-label">⚡ Was wenn der Strompreis weiter steigt?</div>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:20px;">Verschieben Sie den Regler — alle Werte aktualisieren sich live.</p>
-    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:4px;">
-      <span style="font-size:14px;color:var(--muted);">Zusätzlicher Preisanstieg:</span>
-      <span id="preis_szenario_label" style="font-family:'Syne',sans-serif;font-size:24px;font-weight:900;color:var(--gold);">+ 0 %</span>
-    </div>
-    <input type="range" id="preis_szenario" min="0" max="50" step="5" value="0"
-      style="width:100%;accent-color:#F0E15A;margin:14px 0 6px;height:6px;cursor:pointer;">
-    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:20px;">
-      <span>0 %</span><span>+10 %</span><span>+20 %</span><span>+30 %</span><span>+40 %</span><span>+50 %</span>
-    </div>
-    <div class="kontext-grid" style="grid-template-columns:repeat(3,1fr);">
-      <div class="kontext-item">
-        <div class="ki-emoji">💡</div>
-        <div class="ki-val" id="szen_preis" style="font-size:16px;">–</div>
-        <div class="ki-label">Ihr Strompreis dann</div>
-      </div>
-      <div class="kontext-item">
-        <div class="ki-emoji">💰</div>
-        <div class="ki-val" id="szen_ersparnis">–</div>
-        <div class="ki-label">Ersparnis / Monat</div>
-      </div>
-      <div class="kontext-item">
-        <div class="ki-emoji">📈</div>
-        <div class="ki-val" id="szen_vorteil">–</div>
-        <div class="ki-label">Vorteil 20 Jahre</div>
-      </div>
-    </div>
-  </div>
+
 
 </div>
 
@@ -2274,50 +2244,10 @@ function updatePsycho(s1, s3, bar1, bar4, years) {
   document.getElementById('future_betrag').textContent = fmtEur(vorteil);
   updateFuture();
 
-  // 7. Strompreis-Szenario aktualisieren
-  updateSzenario();
 }
 
-// ============================================================
-// STROMPREIS SZENARIO SLIDER
-// ============================================================
-var _preisZuschlag = 0;
-document.getElementById('preis_szenario').addEventListener('input', function() {
-  _preisZuschlag = parseInt(this.value);
-  document.getElementById('preis_szenario_label').textContent = (_preisZuschlag > 0 ? '+ ' : '') + _preisZuschlag + ' %';
-  updateSzenario();
-});
 
-function updateSzenario() {
-  var basePrice  = parseFloat(document.getElementById('price').value) || 0.34;
-  var newPrice   = basePrice * (1 + _preisZuschlag / 100);
-  var consumption= parseFloat(document.getElementById('consumption').value) || 7000;
-  var base       = parseFloat(document.getElementById('base').value) || 12;
-  var pv_monthly = parseFloat(document.getElementById('pv_monthly').value) || 186;
-  var feed_rate  = parseFloat(document.getElementById('feed_rate').value) || 0.079;
-  var pv_prod    = parseFloat(document.getElementById('pv_production').value) || 9000;
-  var inflation  = parseFloat(document.getElementById('inflation').value) || 3.5;
-  var YEARS      = parseInt(document.getElementById('years').value) || 20;
-  var FIN_YEARS  = 15;
 
-  var ev       = calcEVHaushalt(pv_prod, consumption);
-  var feed_kwh = Math.max(0, pv_prod - ev);
-  var rest_kwh = Math.max(0, consumption - ev);
-  var feedJ    = feed_kwh * feed_rate;
-  var pvJahr   = pv_monthly * 12;
-
-  var s1_new = 0, s3_new = 0;
-  for (var y = 0; y < YEARS; y++) {
-    s1_new += consumption * newPrice * Math.pow(1 + inflation/100, y) + base * 12;
-    s3_new += (y < FIN_YEARS ? pvJahr : 0) + rest_kwh * newPrice * Math.pow(1 + inflation/100, y) - feedJ;
-  }
-  var m_ohne = (consumption * newPrice + base * 12) / 12;
-  var m_mit  = pv_monthly + rest_kwh * newPrice / 12 - feedJ / 12;
-
-  document.getElementById('szen_preis').textContent     = (newPrice * 100).toFixed(1).replace('.', ',') + ' ct/kWh';
-  document.getElementById('szen_ersparnis').textContent = fmtEur(Math.round(m_ohne - m_mit));
-  document.getElementById('szen_vorteil').textContent   = fmtEur(Math.round(s1_new - s3_new));
-}
 </script>
 </body>
 </html>
