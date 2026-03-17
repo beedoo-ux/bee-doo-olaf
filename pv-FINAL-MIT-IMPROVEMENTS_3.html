@@ -2155,29 +2155,22 @@ function registerWPListeners() {
 // ============================================================
 
 // Ticker: 49 Minuten Vorlauf (Gesprächsdauer)
-var _clockPerSek = 0;
-var _clockOffset = 49 * 60; // 49 Minuten in Sekunden
+var _clockPerSek = 210 / 30 / 24 / 3600; // Fallback 210€/Mo bis echte Eingabe
+var _clockOffset = 49 * 60;
 var _clockPageLoad = Date.now();
-var bar1_val_global = 0, bar4_val_global = 0;
 
 function _tickNow() {
-  if (_clockPerSek === 0) return;
   var sek = _clockOffset + (Date.now() - _clockPageLoad) / 1000;
   var val = sek * _clockPerSek;
   var monat = bar1_val_global || 210;
   var pvMonat = bar4_val_global || 188;
-  document.getElementById('clock_display').textContent =
-    val.toLocaleString('de-DE', {minimumFractionDigits:5, maximumFractionDigits:5}) + ' €';
-  document.getElementById('clock_liter').textContent =
-    (val / 2.0).toLocaleString('de-DE', {minimumFractionDigits:5, maximumFractionDigits:5}) + ' L';
-  document.getElementById('clock_jahr').textContent =
-    (monat * 12).toLocaleString('de-DE') + ' €';
-  document.getElementById('clock_gespart').textContent =
-    (Math.max(0, monat - pvMonat) * 12).toLocaleString('de-DE') + ' €';
-  var min = Math.floor(sek / 60);
-  var sec = Math.floor(sek % 60);
-  document.getElementById('clock_timer').textContent =
-    min + ':' + (sec < 10 ? '0' : '') + sec + ' min';
+  document.getElementById('clock_display').textContent = val.toLocaleString('de-DE',{minimumFractionDigits:5,maximumFractionDigits:5}) + ' €';
+  document.getElementById('clock_liter').textContent = (val/2).toLocaleString('de-DE',{minimumFractionDigits:5,maximumFractionDigits:5}) + ' L';
+  document.getElementById('clock_jahr').textContent = (monat*12).toLocaleString('de-DE') + ' €';
+  document.getElementById('clock_gespart').textContent = (Math.max(0,monat-pvMonat)*12).toLocaleString('de-DE') + ' €';
+  var min = Math.floor(sek/60);
+  var sec = Math.floor(sek%60);
+  document.getElementById('clock_timer').textContent = min+':'+(sec<10?'0':'')+sec+' min';
 }
 setInterval(_tickNow, 50);
 
