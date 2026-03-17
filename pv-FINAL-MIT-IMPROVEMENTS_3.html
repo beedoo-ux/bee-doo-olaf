@@ -2239,7 +2239,7 @@ function updatePsycho(s1, s3, bar1, bar4, years) {
   // Balken-Vergleich
   var kb1 = bar1; // ohne PV heute
   var kb2 = bar4; // mit PV J.1-15
-  var kb3 = bar4 - (pv_monthly_global || 186); // ab J.16 nur Reststrom
+  var kb3 = bar4 - (parseFloat(document.getElementById('pv_monthly').value)||186); // ab J.16 nur Reststrom
   var kbMax = kb1 || 1; // Division durch Null vermeiden
   document.getElementById('kb_bar1').style.width = '100%';
   document.getElementById('kb_bar2').style.width = Math.round(kb2/kbMax*100) + '%';
