@@ -1,0 +1,2221 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>bee-doo · PV-Entscheidungsrechner</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --gold:#F0E15A; --gold-dark:#C8B93A; --gold-light:#FBF5C0;
+    --dark:#1A1A1A; --dark2:#111111; --card:#222222; --card2:#2D2D2D;
+    --red:#C0392B; --green:#1D8349; --blue:#2471A3;
+    --muted:#6B6B6B; --muted2:#9A9A9A; --text:#F5F5F5;
+    --border:rgba(240,225,90,0.12); --border2:rgba(240,225,90,0.22);
+    --charcoal:#2D2D2D; --cream:#FEFCE8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--dark2);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+  body::before{content:'';position:fixed;top:-300px;right:-200px;width:700px;height:700px;background:radial-gradient(circle,rgba(240,225,90,0.07) 0%,transparent 65%);pointer-events:none;animation:glow 6s ease-in-out infinite;}
+  @keyframes glow{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.6;transform:scale(1.08)}}
+
+  /* BEE-DOO NAVBAR */
+  .bd-navbar {
+    background: var(--dark);
+    border-bottom: 2px solid var(--gold);
+    padding: 0 20px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    height: 64px;
+  }
+  .bd-logo {
+    display: flex;
+    align-items: start;
+    text-decoration: none;
+  }
+  .bd-logo img {
+    height: 38px;
+    width: auto;
+    display: block;
+    filter: brightness(1);
+  }
+  .bd-nav-tag {
+    font-family: 'Syne', sans-serif;
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    border: 1px solid var(--border2);
+    padding: 4px 10px;
+    border-radius: 99px;
+  }
+
+  .container{max-width:980px;margin:0 auto;padding:36px 20px 100px;}
+
+  /* KUNDENNAME BANNER */
+  .customer-banner {
+    position: relative;
+    background: var(--dark);
+    border: 1px solid rgba(240,225,90,0.25);
+    border-radius: 20px;
+    margin-bottom: 32px;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: stretch;
+  }
+  .customer-banner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(240,225,90,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .cb-left {
+    padding: 28px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+    z-index: 1;
+  }
+  .cb-label {
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold);
+    opacity: 0.8;
+  }
+  .customer-banner input {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(240,225,90,0.2);
+    outline: none;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(22px, 4vw, 36px);
+    font-weight: 800;
+    line-height: 1.1;
+    padding-bottom: 6px;
+    width: 100%;
+    transition: border-color 0.2s;
+  }
+  .customer-banner input:focus { border-color: rgba(240,225,90,0.6); }
+  .customer-banner input::placeholder { color: rgba(255,255,255,0.15); }
+  .cb-right {
+    background: rgba(240,225,90,0.06);
+    border-left: 1px solid rgba(240,225,90,0.15);
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    justify-content: center;
+    gap: 6px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    min-width: 160px;
+  }
+  .cb-right .cb-von {
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .cb-right .cb-logo-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .cb-right .cb-sub {
+    font-size: 11px;
+    color: var(--muted);
+  }
+  @media(max-width:560px){
+    .customer-banner { grid-template-columns: 1fr; }
+    .cb-right { border-left: none; border-top: 1px solid rgba(240,225,90,0.15); flex-direction: row; gap: 12px; justify-content: flex-start; padding: 16px 24px; }
+  }
+
+  /* HEADER */
+  .header{text-align:center;margin-bottom:52px;}
+  .eyebrow{font-family:'Syne',sans-serif;font-size:10px;letter-spacing:5px;text-transform:uppercase;color:var(--gold);margin-bottom:18px;opacity:0.85;}
+  h1{font-family:'Syne',sans-serif;font-size:clamp(26px,5.5vw,52px);font-weight:800;line-height:1.08;margin-bottom:14px;}
+  h1 span{color:var(--gold);}
+  .subtitle{color:var(--muted2);font-size:15px;font-weight:300;max-width:540px;margin:0 auto;}
+
+  .section-label{font-family:'Syne',sans-serif;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:16px;}
+
+  /* PARAMS */
+  .params-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px;margin-bottom:28px;}
+  .params-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:18px;}
+  .param-group-title{grid-column:1/-1;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:0.75;padding-top:12px;border-top:1px solid var(--border);}
+  .param-group-title:first-child{border-top:none;padding-top:0;}
+  .param-item label{display:block;font-size:11px;color:var(--muted);margin-bottom:7px;}
+  .param-item input[type="number"]{width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:10px;padding:11px 14px;color:var(--text);font-family:'Syne',sans-serif;font-size:17px;font-weight:700;outline:none;transition:border-color 0.2s,box-shadow 0.2s;}
+  .param-item input[type="number"]:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(240,225,90,0.10);}
+  .param-item .unit{font-size:11px;color:var(--muted);margin-top:5px;}
+
+  /* SZENARIEN */
+  .scenarios{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:28px;}
+  @media(max-width:700px){.scenarios{grid-template-columns:1fr;}}
+  .sc{border-radius:20px;padding:26px 22px;border:1px solid var(--border);position:relative;overflow:hidden;transition:transform 0.2s;}
+  .sc:hover{transform:translateY(-3px);}
+  .sc.bad{background:linear-gradient(160deg,#180d0d,#1f1010);border-color:rgba(239,68,68,0.25);}
+  .sc.mid{background:linear-gradient(160deg,#0e1420,#111828);border-color:rgba(59,130,246,0.2);}
+  .sc.best{background:linear-gradient(160deg,#0a1a10,#0d2015);border-color:rgba(34,197,94,0.3);}
+  .sc.best::after{content:'★ BESTE OPTION';position:absolute;top:14px;right:14px;font-size:9px;letter-spacing:2px;color:var(--green);font-weight:700;background:rgba(34,197,94,0.1);padding:3px 8px;border-radius:99px;}
+  .sc-icon{font-size:26px;margin-bottom:10px;}
+  .sc-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:4px;}
+  .bad .sc-title{color:var(--red);}.mid .sc-title{color:var(--blue);}.best .sc-title{color:var(--green);}
+  .sc-desc{font-size:11px;color:var(--muted2);margin-bottom:18px;line-height:1.5;}
+  .sc-main-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+  .sc-main-value{font-family:'Syne',sans-serif;font-size:clamp(22px,3.5vw,30px);font-weight:800;line-height:1;margin-bottom:4px;}
+  .bad .sc-main-value{color:var(--red);}.mid .sc-main-value{color:var(--blue);}.best .sc-main-value{color:var(--green);}
+  .sc-sub{font-size:11px;color:var(--muted);margin-bottom:18px;}
+  .sc-rows{border-top:1px solid var(--border);padding-top:14px;display:flex;flex-direction:column;gap:10px;}
+  .sc-row{display:flex;flex-direction:column;gap:3px;}
+  .sc-row .k{color:var(--muted);font-size:11px;}
+  .sc-row .v{font-weight:700;font-family:'Syne',sans-serif;font-size:16px;word-break:break-word;}
+  .bad .sc-row .v{color:rgba(239,68,68,0.9);}.mid .sc-row .v{color:rgba(59,130,246,0.9);}.best .sc-row .v{color:rgba(34,197,94,0.9);}
+
+  /* DIFF BOX */
+  .diff-box{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;background:linear-gradient(135deg,rgba(240,225,90,0.06),rgba(34,197,94,0.04));border:1px solid rgba(240,225,90,0.18);border-radius:20px;padding:30px 24px;margin-bottom:28px;text-align:center;}
+  @media(max-width:560px){.diff-box{grid-template-columns:1fr;}}
+  .di-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+  .di-val{font-family:'Syne',sans-serif;font-size:clamp(19px,3.5vw,28px);font-weight:800;margin-bottom:4px;}
+  .di-val.green{color:var(--green);}.di-val.sun{color:var(--gold);}.di-val.red{color:var(--red);}
+  .di-sub{font-size:11px;color:var(--muted);}
+
+  /* BALKEN */
+  .bars-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px;margin-bottom:28px;}
+  .bar-row{margin-bottom:14px;}
+  .bar-label{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:6px;font-size:13px;}
+  .bar-label .name{color:var(--muted2);flex:1;min-width:0;}
+  .bar-label .amt{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;white-space:nowrap;flex-shrink:0;}
+  .bar-sub-label{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:6px;}
+  .bar-sub-label .sub-name{font-size:11px;color:var(--muted);flex:1;min-width:0;}
+  .bar-sub-label .sub-amt{font-family:'Syne',sans-serif;font-weight:700;font-size:12px;white-space:nowrap;flex-shrink:0;opacity:0.75;}
+  .bar-track{height:9px;background:rgba(255,255,255,0.04);border-radius:99px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:99px;transition:width 0.9s cubic-bezier(0.4,0,0.2,1);}
+  .bf-red{background:linear-gradient(90deg,#C0392B,#E74C3C);}
+  .bf-blue{background:linear-gradient(90deg,#2471A3,#3498DB);}
+  .bf-grn{background:linear-gradient(90deg,#1D8349,#27AE60);}
+
+  /* JAHRESVERLAUF */
+  .tl-card { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:28px 24px; margin-bottom:28px; }
+  .tl-intro { font-family:'Syne',sans-serif; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--muted); margin-bottom:24px; }
+
+  .tl-item { margin-bottom:12px; }
+  .tl-item:last-child { margin-bottom:0; }
+
+  /* Jahr-Label */
+  .tl-yr-label { font-family:'Syne',sans-serif; font-size:11px; font-weight:700; color:var(--muted2); letter-spacing:1px; text-transform:uppercase; margin-bottom:10px; display:flex; align-items:center; gap:10px; }
+  .tl-item.tl-turn .tl-yr-label { color:var(--green); }
+  .tl-item.tl-grand .tl-yr-label { color:var(--gold); font-size:12px; }
+  .tl-turn-badge { font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--green); background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.2); padding:2px 8px; border-radius:99px; }
+
+  /* Kachel mit den 3+1 Werten */
+  .tl-vals-wrap { background:var(--card2); border:1px solid var(--border); border-radius:14px; padding:16px 18px; display:flex; flex-direction:column; gap:12px; }
+  .tl-item.tl-turn .tl-vals-wrap { border-color:rgba(34,197,94,0.2); background:rgba(34,197,94,0.04); }
+  .tl-item.tl-grand .tl-vals-wrap { border-color:rgba(240,225,90,0.2); background:rgba(240,225,90,0.04); }
+
+  /* Eine Wert-Zeile */
+  .tl-vrow { display:flex; align-items:center; gap:10px; }
+  .tl-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .tl-vname { font-size:11px; color:var(--muted); flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .tl-vamt { font-family:'Syne',sans-serif; font-size:15px; font-weight:800; flex-shrink:0; white-space:nowrap; }
+  .tl-vamt-wrap { display:flex; flex-direction:column; align-items:flex-end; flex-shrink:0; }
+  .tl-vamt-sub { font-size:10px; color:var(--muted); white-space:nowrap; margin-top:1px; }
+  .tl-vbar-wrap { flex:1; min-width:40px; max-width:120px; }
+  .tl-vbar-track { height:4px; background:rgba(255,255,255,0.06); border-radius:99px; overflow:hidden; }
+  .tl-vbar-fill { height:100%; border-radius:99px; }
+
+  /* Vorteil-Zeile */
+  .tl-adv-row { display:flex; align-items:center; justify-content:space-between; padding-top:10px; border-top:1px solid var(--border); }
+  .tl-adv-label { font-size:11px; color:var(--muted); }
+  .tl-adv-val { font-family:'Syne',sans-serif; font-size:18px; font-weight:800; color:var(--gold); }
+  .tl-item.tl-grand .tl-adv-val { font-size:22px; }
+
+  .c-red{color:#f87171;}.c-blue{color:#60a5fa;}.c-grn{color:#4ade80;}.c-sun{color:var(--gold);}
+
+  /* AMORTISATION GAUGE */
+  .amort-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 36px 32px 32px;
+    margin-bottom: 28px;
+    overflow: hidden;
+    position: relative;
+  }
+  .amort-inner {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+  @media(max-width:620px){ .amort-inner{grid-template-columns:1fr;} }
+  .amort-gauge-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    position: relative;
+  }
+  .amort-gauge-wrap canvas { display: block; }
+  .amort-gauge-center {
+    position: absolute;
+    top: 54%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    pointer-events: none;
+  }
+  .amort-gauge-center .gc-val {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(20px, 4vw, 28px);
+    font-weight: 800;
+    color: var(--green);
+    line-height: 1;
+  }
+  .amort-gauge-center .gc-label {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .amort-right { display: flex; flex-direction: column; gap: 16px; }
+  .amort-eyebrow-label {
+    font-size: 10px; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--green); opacity: 0.85;
+  }
+  .amort-headline {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(16px, 2.8vw, 22px);
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.25;
+  }
+  .amort-desc-text { font-size: 13px; color: var(--muted2); line-height: 1.7; }
+  .amort-compare {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 12px;
+    align-items: start;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 18px;
+  }
+  .amort-compare .ac-block { text-align: center; }
+  .amort-compare .ac-label { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .amort-compare .ac-val { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; }
+  .amort-compare .ac-arrow { font-size: 20px; color: var(--muted); text-align: center; padding-top: 28px; }
+  .amort-saving-pill {
+    display: inline-flex;
+    align-items: start;
+    gap: 8px;
+    background: rgba(34,197,94,0.12);
+    border: 1px solid rgba(34,197,94,0.3);
+    border-radius: 99px;
+    padding: 8px 16px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--green);
+    align-self: flex-start;
+  }
+
+  /* CHART */
+  .chart-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px;margin-bottom:28px;}
+  .chart-wrap{position:relative;height:300px;}
+
+  /* KONTEXT-RECHNER */
+  .kontext-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px;margin-bottom:28px;}
+  .kontext-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-top:20px;}
+  .kontext-item{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;}
+  .kontext-item .ki-emoji{font-size:28px;margin-bottom:8px;}
+  .kontext-item .ki-val{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--gold);margin-bottom:4px;}
+  .kontext-item .ki-label{font-size:11px;color:var(--muted);line-height:1.4;}
+
+  /* BÖRSENSTROM */
+  .boerse-section{margin-top:48px;border-top:2px solid rgba(240,225,90,0.2);padding-top:48px;}
+
+  /* WÄRMEPUMPE */
+  .wp-section { margin-bottom: 28px; }
+  .wp-toggle-bar {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px 22px;
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    user-select: none;
+  }
+  .wp-toggle-bar:hover { border-color: var(--border2); }
+  .wp-toggle-bar.active { border-color: rgba(240,225,90,0.35); background: rgba(240,225,90,0.04); }
+  .wp-toggle-icon { font-size: 28px; }
+  .wp-toggle-switch {
+    width: 48px; height: 26px;
+    background: var(--card2);
+    border: 1px solid var(--border2);
+    border-radius: 99px;
+    position: relative;
+    transition: background 0.3s;
+    flex-shrink: 0;
+  }
+  .wp-toggle-switch.on { background: var(--gold); border-color: var(--gold); }
+  .wp-toggle-knob {
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 18px; height: 18px;
+    background: var(--muted2);
+    border-radius: 50%;
+    transition: transform 0.3s, background 0.3s;
+  }
+  .wp-toggle-switch.on .wp-toggle-knob { transform: translateX(22px); background: #1A1A1A; }
+  .wp-inputs { display: none; }
+  .wp-inputs.visible { display: block; }
+
+  /* Heizart-Buttons */
+  .wp-heizart-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-top: 4px; }
+  @media(max-width:560px){ .wp-heizart-grid { grid-template-columns: repeat(2,1fr); } }
+  .wp-heizart-btn {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .wp-heizart-btn:hover { border-color: var(--border2); }
+  .wp-heizart-btn.active { border-color: var(--gold); background: rgba(240,225,90,0.08); }
+  .wh-icon { font-size: 22px; margin-bottom: 6px; }
+  .wh-label { font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; color: var(--muted2); }
+  .wp-heizart-btn.active .wh-label { color: var(--gold); }
+
+  /* WP Ergebnis-Karten */
+  .wp-results { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-top: 20px; }
+  @media(max-width:700px){ .wp-results { grid-template-columns: 1fr; } }
+  .wp-res-card { border-radius: 20px; padding: 24px 20px; border: 1px solid var(--border); }
+  .wp-res-bad  { background: linear-gradient(160deg,#1a0a0a,#1f1010); border-color: rgba(192,57,43,0.3); }
+  .wp-res-good { background: linear-gradient(160deg,#0a1a10,#0d2015); border-color: rgba(29,131,73,0.3); }
+  .wp-res-diff { background: linear-gradient(160deg,#1a1500,#201a00); border-color: rgba(240,225,90,0.3); }
+  .wp-res-icon { font-size: 26px; margin-bottom: 8px; }
+  .wp-res-label { font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; margin-bottom: 10px; }
+  .wp-res-bad .wp-res-label { color: #f87171; }
+  .wp-res-good .wp-res-label { color: #4ade80; }
+  .wp-res-diff .wp-res-label { color: var(--gold); }
+  .wp-res-main { font-family: 'Syne', sans-serif; font-size: clamp(22px,4vw,30px); font-weight: 800; line-height: 1; margin-bottom: 4px; }
+  .wp-res-bad .wp-res-main { color: #f87171; }
+  .wp-res-good .wp-res-main { color: #4ade80; }
+  .wp-res-diff .wp-res-main { color: var(--gold); }
+  .wp-res-sub { font-size: 11px; color: var(--muted); margin-bottom: 16px; }
+  .wp-res-detail { border-top: 1px solid var(--border); padding-top: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .wp-rd { display: flex; flex-direction: column; gap: 2px; }
+  .wp-rdk { font-size: 11px; color: var(--muted); }
+  .wp-rdv { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; }
+  .wp-res-bad .wp-rdv { color: rgba(192,57,43,0.9); }
+  .wp-res-good .wp-rdv { color: rgba(29,131,73,0.9); }
+  .wp-res-diff .wp-rdv { color: rgba(240,225,90,0.9); }
+
+  /* HINT */
+  .hint{font-size:12px;color:var(--muted);line-height:1.8;border-top:1px solid var(--border);padding-top:18px;}
+  .hint strong{color:var(--muted2);}
+
+  /* PDF BUTTON */
+  .pdf-btn{position:fixed;bottom:28px;right:24px;background:var(--gold);color:#1A1A1A;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;letter-spacing:1px;padding:14px 22px;border-radius:99px;border:none;cursor:pointer;box-shadow:0 4px 24px rgba(245,158,11,0.4);transition:transform 0.2s,box-shadow 0.2s;z-index:100;}
+  .pdf-btn:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(245,158,11,0.5);}
+  @media print{.pdf-btn{display:none;} body{background:#fff;color:#000;} .container{padding:20px;}}
+</style>
+</head>
+<body>
+
+<button class="pdf-btn" onclick="window.print()">⬇ Als PDF speichern</button>
+
+<!-- BEE-DOO NAVBAR -->
+<nav class="bd-navbar">
+  <a class="bd-logo" href="https://bee-doo.de" target="_blank">
+    <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c3ZnIGlkPSJFYmVuZV8xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjkzLjQzIDUwOS4zMSI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiNmZmZmZmY7fS5jbHMtMSwuY2xzLTJ7c3Ryb2tlLXdpZHRoOjBweDt9LmNscy0ye2ZpbGw6I2ZmZWM1NTt9PC9zdHlsZT48L2RlZnM+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNODU4LDE0OC40MVYuMDhoMzQuMzZjLjEsMS4xOC4yOSwyLjQ4LjI5LDMuNzkuMDEsNjkuNjIuMDgsMTM5LjI1LS4wMiwyMDguODctLjA1LDMzLjE3LTEzLjY4LDU5LjU4LTQxLjMsNzcuOTYtMzkuMTUsMjYuMDUtOTIuMDEsMTYuNjYtMTIwLjc0LTIwLjgzLTM3Ljc4LTQ5LjMxLTE2LjUxLTEyMC41LDQyLjQ2LTE0MC44NywyMy44OC04LjI1LDQ3LjQ4LTcuNDYsNjkuMzIsNi44NCw1LjM5LDMuNTMsMTAuMTEsOC4wOSwxNS42MiwxMi41N1pNNzQ1LjgzLDIxNC42M2MtLjM0LDMxLjE5LDIzLjIxLDU2LjQyLDU0LjAzLDU3LjU3LDMzLjI2LDEuMjMsNTguNTgtMjQuMjQsNTguNzktNTYuOTUuMjEtMzIuODktMjQuMS01Ny44OS01Ni4zLTU4LjA1LTMxLjg2LS4xNS01Ni4zNywyNC43NS01Ni41Miw1Ny40M1oiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0zOC40MywxNDguMDZjNi4zNy00Ljg2LDEyLjAyLTEwLjA1LDE4LjQ3LTEzLjkyLDIxLjA0LTEyLjYzLDQzLjU5LTEzLjE5LDY2LjA2LTUuMjIsMzQuNjcsMTIuMjksNTUuMzEsMzcuMyw2MC45Myw3My42MSw3LjEzLDQ2LjExLTI0LjU5LDkwLjgxLTcwLjU1LDEwMC44LTUyLjM0LDExLjM4LTEwMy40OC0yNS43MS0xMDguODItNzguOTgtLjQ0LTQuMzQtLjQyLTguNzQtLjQyLTEzLjExLS4wNC02OC42My0uMDUtMTM3LjI1LS4wNy0yMDUuODgsMC0xLjcxLDAtMy40MiwwLTUuMzVoMzQuNHYxNDguMDZaTTk0LjIxLDI3Mi4xNWMyOC4xMy44Myw1Ni4yNi0yMS41Miw1Ni4zOC01Ny40NC4xMS0zMi41OC0yNC41NS01Ny42MS01Ni40MS01Ny41Mi0zMiwuMDktNTYuMjYsMjQuOTItNTYuNDMsNTcuNTgtLjE4LDMzLjkyLDI2Ljk5LDU4LjIzLDU2LjQ2LDU3LjM4WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTU3Mi42MSwyNTQuNjljLTE2LjQyLDM0LjMzLTYyLjc2LDYzLjU4LTExMyw0NS4zMi00My44Ny0xNS45NC02OC40Mi02Mi41My01NS45NC0xMDkuMjMsMTIuMDQtNDUuMDQsNTUuNzgtNzQuOTQsMTA0LjcxLTY0Ljc4LDQ2LjMzLDkuNjIsNzguMTksNTEuMDIsNzAuNzksMTAwLjk2aC0xNDEuODFjLjQzLDguNzQsMy4xLDE2LjE2LDcuNzIsMjIuNzQsMTIuNiwxNy45NiwzMC4zNywyNC4xLDUxLjYxLDIyLjA2LDEzLjE4LTEuMjYsMjQuNDgtNi40NSwzMy45Ni0xNS42OS43OS0uNzcsMi4xNi0xLjMzLDMuMjYtMS4zMywxMi43NC0uMDksMjUuNDgtLjA2LDM4LjctLjA2Wk01NDMuMzQsMTk5LjIxYy0zLjU4LTIwLjMtMjUuNjMtNDMuMDctNTQuNDYtNDIuMDItMjQuOC45MS01MC4xNSwyMS41MS01MS4xMyw0Mi4wMmgxMDUuNTlaIi8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMjM5LjQ4LDIyNy4xYy45NiwxMC40OSw0LjUxLDE5LjI2LDEwLjkxLDI2Ljc1LDEyLjc4LDE0Ljk1LDI5LjM5LDE5LjgsNDguNDYsMTcuOTUsMTMuMTYtMS4yOCwyNC41MS02LjM1LDMzLjk2LTE1LjY3Ljc5LS43OCwyLjE1LTEuMzYsMy4yNS0xLjM3LDEyLjc0LS4wOSwyNS40OS0uMDYsMzkuMS0uMDYtMS4yMywyLjMyLTIuMDIsNC4wOC0zLjA1LDUuNjktMTYuNDQsMjUuNzUtMzkuNTUsNDEuMjUtNzAuMTIsNDQuNTYtNDguNDgsNS4yNS05Mi4yOS0yOS42LTk4LjI5LTc3LjgyLTUuMDctNDAuNzUsMTQuNDQtNzcuMzIsNTEuNDMtOTUsMjIuMDMtMTAuNTMsNDUuMTMtMTEsNjcuNzktMi41NiwzMi43MywxMi4xOSw1My4yNCwzNS4zNCw1OC40OCw3MC41MywxLjA5LDcuMzQuNSwxNC45My43MSwyMi40LjEsMy42MS0xLjM4LDQuNzItNS4xNCw0LjctNDMuOTktLjE1LTg3Ljk4LS4xLTEzMS45Ny0uMS0xLjYsMC0zLjIxLDAtNS41MSwwWk0yMzkuODksMTk5LjA2aDEwNS42OWMtNC42MS0yMi4wNC0yNi44Ni00Mi42OC01NC4wNS00MS44Ny0yNS4xLjc1LTQ5LjQsMjAuMy01MS42NSw0MS44N1oiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0xMDAyLjgzLDMwNi45M2MtNTAuMzgsMC05MS4zOC00MC45LTkxLjQ2LTkxLjIxLS4wOC01MC43LDQwLjk0LTkxLjYsOTEuODMtOTEuNTcsNTAuNDcuMDQsOTAuOTIsNDAuNzgsOTAuODYsOTEuNTEtLjA3LDUwLjYtNDAuNzIsOTEuMjctOTEuMjMsOTEuMjdaTTEwMDMuMDgsMjcyLjE1YzMxLjczLjA2LDU2LjQyLTI0Ljk4LDU2LjM5LTU3LjIxLS4wNC0zMi44NC0yNC4yNC01Ny43Mi01Ni4xOS01Ny43NS0zMS43Ny0uMDMtNTYuODIsMjQuNzctNTYuOTYsNTYuNDItLjE1LDMzLjA5LDI0LjQ3LDU4LjQ4LDU2Ljc3LDU4LjU0WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTEyMDIuMDQsMzA2LjkzYy01MC40LjAzLTkxLjMxLTQxLjAzLTkxLjM2LTkxLjctLjA1LTUwLjI3LDQwLjgxLTkwLjk2LDkxLjQ4LTkxLjA3LDUwLjYyLS4xMiw5MS4yOSw0MC44Niw5MS4yNyw5MS45Ny0uMDIsNDkuOTctNDEuMSw5MC43OC05MS4zOSw5MC44MVpNMTI1OC41MSwyMTQuOTZjLjAzLTMzLjAyLTIzLjg3LTU3LjctNTUuOTMtNTcuNzctMzEuOTQtLjA3LTU2LjUxLDI0Ljc1LTU3LjAzLDU2LjYxLS41MiwzMi4xNywyNS4wMiw1Ny43Miw1NC45Miw1OC40NSwzNS41OC44Nyw1OC40OC0yOCw1OC4wNC01Ny4yOFoiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik01OTguNTgsMjMyLjAxdi0zMi40MWg5NC43NHYzMi40MWgtOTQuNzRaIi8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMTM2LjkzLDQ5OC40OHYtNDkuMDZoNS4yOGMuMSwxLjI5LjI5LDIuNzEuMjksNC4xNC4wMiwxNi41LjA1LDMzLS4wNSw0OS41LDAsMS41LS43NSw0LjItMS40Myw0LjI5LTIuNDkuMzMtNS4yMywxLjI4LTcuMy0xLjgzLTkuNjYtMTQuNTctMTkuNTQtMjktMjkuMzQtNDMuNDgtLjg5LTEuMzItMS44MS0yLjYxLTMuNS0zLjc2djQ5LjAzaC01LjYzdi01Ny43MWM0LjQzLTEuMiw3LjM1LS4yNCwxMC4wMSwzLjg1LDkuMjcsMTQuMjMsMTkuMDIsMjguMTUsMjguNTgsNDIuMTguNzMsMS4wNywxLjQ5LDIuMTEsMi4yMywzLjE3LjI4LS4xLjU3LS4yMS44NS0uMzFaIi8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNNDQ1LjM0LDQ1NS41N2MtMS4yMiwxLjI4LTIuMzIsMi40My0zLjYyLDMuNzktNC45MS00LjM0LTEwLjQtNi44LTE2Ljk5LTYuNzUtMTIuNDYuMDktMjIuOTQsOS4wMi0yNC41MiwyMS40LTEuMTQsOC45OC42OSwxNy4wOSw3LjM5LDIzLjczLDguODcsOC44LDIyLjU1LDcuMzMsMzEuMjEsMy43Mi44OC0uMzcsMS43OS0xLjg0LDEuODMtMi44NC4xOS00LjYxLjIzLTkuMjUtLjAzLTEzLjg2LS4wNS0uOTItMS42MS0yLjQyLTIuNTctMi41LTMuNTYtLjMtNy4xNi0uMTItMTAuOTctLjEydi00LjY0YzUuODgsMCwxMS43LS4wNywxNy41MS4xMS41NS4wMiwxLjUsMS41NCwxLjUxLDIuMzguMTIsNy4yNS4xNCwxNC40OSwwLDIxLjc0LS4wMi45OS0uODksMi40LTEuNzYsMi44Ny0xMi4xOSw2LjU5LTMxLjIyLDcuMjctNDIuMzItNC42My04LjUxLTkuMTItMTAuNTctMjUuMDQtNC40My0zNi43NSw1LjYzLTEwLjczLDE4LjUtMTcuMDIsMzAuOTctMTUuMyw2LjMxLjg3LDEyLjEyLDIuNjQsMTYuOCw3LjY1WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTg3NC41Niw0NDguODFjOC41MS40MSwxNi44OC4zNywyNS4xMiwxLjM1LDYuNzEuOCwxMS4wMiw2LjQzLDExLjM0LDEzLjA0LjM3LDcuNjUtMy4zNiwxMy4zNi0xMC4yMywxNS42LTEuMzkuNDUtMi44Mi43OS00LjYxLDEuMjgsNS42NCw5LjE5LDExLjA5LDE4LjA3LDE2LjY1LDI3LjEyLTQuNCwxLjE3LTcuMDkuMzQtOS4xNy0zLjY5LTMuMzYtNi41NC03LjU4LTEyLjY0LTExLjA3LTE5LjEyLTEuNy0zLjE1LTMuNjYtNC43Ni03LjMxLTQuMTktMS42OC4yNi0zLjQyLjA0LTUuNi4wNHYyNy4xM2gtNS4xMXYtNTguNTVaTTg3OS45Miw0NzYuMDZjNi42OS0uNjksMTIuOTYtLjgsMTguOTYtMi4xMiw0LjcyLTEuMDQsNi45My01LjEyLDYuNzUtOS42MS0uMTgtNC41OS0yLjYtOC4zNy03LjM1LTkuMjEtNS45My0xLjA0LTEyLjAzLTEuMDQtMTguMzYtMS41MnYyMi40NloiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0zMjMuMDgsNDgwLjA5YzUuNjEsOS4xMiwxMS4wNSwxNy45OSwxNi42NCwyNy4wOC00LjI3LDEuMDgtNi45NC41My04Ljk5LTMuNC0zLjctNy4wNy04LTEzLjgyLTEyLjA3LTIwLjY5LTEuNDItMi40LTkuMTgtNC4yMy0xMS4yNi0yLjQ3LS42Ni41Ni0uNzksMS45OS0uOCwzLjAzLS4wNyw2LjUtLjA0LDEyLjk5LS4wNCwxOS40OSwwLDEuMzQsMCwyLjY4LDAsNC4yNmgtNS4xdi01OC41N2M4LjUyLjQxLDE2Ljg4LjM4LDI1LjEyLDEuMzUsNi42Ny43OCwxMS4wNyw2LjQ4LDExLjM3LDEzLjAxLjM1LDcuNjYtMy4zNSwxMy4zMy0xMC4yMSwxNS42LTEuNC40Ni0yLjgzLjgxLTQuNjYsMS4zMlpNMzA2LjU4LDQ3NS4zN2M0LjgzLDAsOS4wNS4wMywxMy4yOC0uMDIsMS4xMS0uMDEsMi4yNC0uMTgsMy4zMi0uNDMsNi4zMi0xLjQxLDkuNTYtNS4xOSw5LjI4LTEwLjc3LS4yNy01LjQ5LTQuMDEtOS4yOC0xMC4yOS05Ljg1LTQuMzMtLjM5LTguNzEtLjM0LTEzLjA2LS4yMy0uODYuMDItMi40LDEuMTctMi40MiwxLjg0LS4xOSw2LjMyLS4xMSwxMi42NC0uMTEsMTkuNDVaIi8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMTEzMS40NCw0NzguNzNjLjY2LTcuNzMsMi40OC0xNC43Myw3LjEtMjAuODcsMTAuMjItMTMuNTgsMzAuMzMtMTMuNjYsNDAuMTYuMiw4LjI0LDExLjYyLDguNzEsMjQuMywyLjQ2LDM2Ljg4LTQuOTQsOS45Ni0xMy40MSwxNS4wMi0yNC43MiwxNC4xMy0xMC42OS0uODQtMTcuNy03LjEtMjEuNjItMTYuNjYtMS43Ni00LjMtMi4yOS05LjExLTMuMzgtMTMuNjhaTTExODAuNzEsNDc3LjY2Yy0xLjMyLTQuNS0yLjE1LTkuMjItNC4wOS0xMy40NC0zLjM5LTcuMzktOS40Ny0xMS40Ni0xNy43Ny0xMS41NC04LjMtLjA4LTE0LjM5LDMuOTEtMTguMDQsMTEuMTctNC42Myw5LjItNC43NSwxOC43NS0uNTYsMjguMTYsNy4xMSwxNS45NSwyNi41NywxNC40NywzMy43MSw1LjA4LDQuMzMtNS43LDYuMDktMTIuMTcsNi43NC0xOS40NFoiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik04MTMuMDMsNDc4LjUxYy0uMTMsNi4yOC0xLjQ0LDEyLjE3LTQuNjgsMTcuNTUtNS4yNCw4LjctMTIuNzYsMTMuNDctMjMuMTQsMTMuMDctOS45Mi0uMzgtMTYuOTUtNS40OS0yMS40My0xNC4wMS01LjU5LTEwLjYzLTUuNTktMjEuNjMtLjQ2LTMyLjM5LDUuMDEtMTAuNTEsMTUuMTMtMTYuMTksMjUuMzgtMTQuODgsMTEuNzcsMS41MSwyMC41OSw5Ljc1LDIzLjE0LDIxLjguNjIsMi45MS44LDUuOTEsMS4xOSw4Ljg2Wk04MDguNDgsNDc4Ljk5Yy0uNzItNi4zNy0yLjA4LTEyLjE0LTUuNDktMTcuMjktNy44LTExLjc5LTI0LjYxLTEyLjMzLTMyLjY2LS43Mi02Ljg5LDkuOTUtNy4wNywyMC44NC0yLjA1LDMxLjY2LDMuNTEsNy41NSw5Ljc1LDExLjcxLDE4LjE2LDExLjY3LDguNC0uMDQsMTQuNjItNC4yNiwxOC4wMi0xMS44NSwxLjktNC4yNCwyLjcxLTguOTYsNC4wMS0xMy40N1oiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik03LjI2LDQ1NC4xdjIwLjRoMjguMTF2NS4wOUg3LjQ0djIzLjE2aDMwLjkydjQuNjVIMS43MXYtNTguMDRoMzUuNTh2NC43M0g3LjI2WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTIwNiw0NDkuMzZoMzUuNjh2NC43aC0zMC4yNHYyMC41MmgyOC4wMXY1LjE2Yy01LjMxLDAtMTAuNjUtLjA3LTE1Ljk4LjAyLTMuOTUuMDctOS40MS0xLjEyLTExLjQyLjk1LTIuMDUsMi4xMS0uNzYsNy41Mi0uODQsMTEuNDktLjA3LDMuMzYtLjAxLDYuNzItLjAxLDEwLjU1aDMxLjI4Yy4wOSwxLjczLjE1LDMuMDEuMjUsNC45LTIuNjEsMC00LjkzLDAtNy4yNiwwLTguODcsMC0xNy43NC0uMDMtMjYuNjIuMDItMS45OC4wMS0zLjMxLS4xOS0zLjMtMi43NS4wOC0xNy45OS4wNS0zNS45OS4wOC01My45OSwwLS40Ny4yMi0uOTUuMzctMS41NloiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0xMjkwLjksNDQ5LjQ0Yy0uMzksMTQuNjMtLjE2LDI5LjExLTEuMzgsNDMuNDctLjgzLDkuNzctOC43MiwxNS42Ni0xOC42NCwxNi4xMi0xNSwuNjktMjMuMzgtNi43Ny0yMy43OC0yMS44Mi0uMzMtMTIuNDctLjA3LTI0Ljk1LS4wNy0zNy43Mmg1LjE1Yy4wNiwxLjI4LjE4LDIuNjEuMTgsMy45NC4wMiw5Ljc0LS4wMiwxOS40OC4wMywyOS4yMi4wMSwyLjM2LjIsNC43NC41MSw3LjA5LDEuMjcsOS40OSw3LjA4LDE0LjU0LDE2LjM4LDE0LjM3LDguNzUtLjE2LDE0LjktNS44MSwxNS4zLTE1LjEzLjQ5LTExLjQ3LjI2LTIyLjk3LjM0LTM0LjQ1LjAxLTEuNjEsMC0zLjIyLDAtNS4wOGg1Ljk3WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTcwMy4wOCw0NDkuMTh2NC45MWgtMjkuMDN2MjAuNjZoMjYuODV2NC45NmgtMjYuOTd2MjcuNjVjLTIuMDIuMDktMy42Ny4xNy01LjU4LjI1di01OC40M2M1LjcsMCwxMS4zOSwwLDE3LjA5LDBzMTEuNDYsMCwxNy42MywwWiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTEwNjAuNyw1MDcuNDdoLTUuNjFjMC03LjExLjE3LTE0LjA4LS4xLTIxLjAyLS4wOS0yLjMzLS44My00LjkyLTIuMDctNi44OS02LjMyLTEwLTEyLjkxLTE5Ljg0LTE5LjQ2LTI5LjgycTYuMjgtMS4yOSw5LjQzLDMuODRjNC44Niw3Ljg1LDkuNzQsMTUuNjcsMTQuOTgsMjQuMDksMS0xLjQsMS43OS0yLjQsMi40Ny0zLjQ3LDQuMzMtNi44Niw4Ljg3LTEzLjYxLDEyLjg1LTIwLjY3LDIuMTEtMy43NCw0LjYxLTUuMiw5LjA3LTMuOTktMS4xNiwxLjgxLTIuMjYsMy41Ny0zLjQsNS4zLTQuOTMsNy41Mi05Ljc1LDE1LjEyLTE0Ljg4LDIyLjQ5LTIuMzksMy40NC0zLjU2LDYuODktMy4zNiwxMS4xMS4zLDYuMjEuMDgsMTIuNDUuMDgsMTkuMDNaIi8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNNTI0Ljc5LDUwNy40M2gtNS40N2MwLTUuNi0uMy0xMS4wNy4wOC0xNi40OS40MS01Ljc5LTEuMjItMTAuNTYtNC41Ni0xNS4yOC01Ljk4LTguNDItMTEuNDMtMTcuMjItMTcuMTYtMjUuOTUsNi4yMy0xLjI0LDYuMjgtMS4yMiw5LjQxLDMuODEsNC45NCw3Ljk0LDkuODgsMTUuODgsMTUuMTMsMjQuMzIsMi43OC00LjM5LDUuMzEtOC4zNiw3LjgyLTEyLjM0LDIuNTMtNC4wMSw1LjI3LTcuOTIsNy41LTEyLjA5LDEuOTEtMy41OCw0LjMxLTUuMjksOC44MS0zLjc4LS42MiwxLjAzLTEuMjQsMi4xNC0xLjkzLDMuMi01Ljg5LDguOTgtMTEuODgsMTcuOS0xNy42LDI2Ljk4LTEuMTgsMS44Ny0xLjg1LDQuMzQtMS45Myw2LjU2LS4yNCw2Ljg1LS4wOSwxMy43MS0uMDksMjEuMDZaIi8+PHJlY3QgY2xhc3M9ImNscy0yIiB5PSIzNTguODEiIHdpZHRoPSIxMjkzLjQzIiBoZWlnaHQ9IjI1LjcyIi8+PC9zdmc+" style="height:36px;display:block;" alt="bee-doo">
+  </a>
+  <div class="bd-nav-tag">PV-Entscheidungsrechner</div>
+</nav>
+
+<div class="container">
+
+  <!-- KUNDENNAME -->
+  <div class="customer-banner">
+    <div class="cb-left">
+      <span class="cb-label">Persönliche Analyse für</span>
+      <input type="text" id="customer_name" placeholder="Name des Kunden eingeben…" autocomplete="off">
+    </div>
+    <div class="cb-right">
+      <div class="cb-von">Erstellt von</div>
+      <div class="cb-logo-text">bee-doo GmbH</div>
+      <div class="cb-sub">Bielefeld · bee-doo.de</div>
+    </div>
+  </div>
+
+  <div class="header">
+    <div class="eyebrow">Entscheidungsanalyse · <span id="eyebrow_years">20</span>-Jahres-Vergleich</div>
+    <h1>Was verlieren Sie ohne<br><span>eigenes Solardach?</span></h1>
+    <p class="subtitle" id="subtitle_text">Drei Szenarien im direkten Vergleich — inkl. Einspeisevergütung, Reststromzukauf und fixer PV-Rate (15 Jahre).</p>
+  </div>
+
+  <!-- PARAMETER -->
+  <div class="params-card">
+    <div class="section-label">Parameter anpassen</div>
+    <div class="params-grid">
+      <div class="param-group-title">Stromkosten ohne PV</div>
+      <div class="param-item">
+        <label>Jahresverbrauch</label>
+        <input type="number" id="consumption" value="7000">
+        <div class="unit">kWh / Jahr</div>
+      </div>
+      <div class="param-item">
+        <label>Strompreis</label>
+        <input type="number" id="price" value="0.34" step="0.01">
+        <div class="unit">€ / kWh</div>
+      </div>
+      <div class="param-item">
+        <label>Grundgebühr</label>
+        <input type="number" id="base" value="12">
+        <div class="unit">€ / Monat</div>
+      </div>
+      <div class="param-item">
+        <label>Preissteigerung p.a. — <span id="inflation_label" style="color:var(--gold);font-weight:700">3,5 %</span></label>
+        <input type="range" id="inflation" min="0" max="4" step="0.5" value="3.5" style="width:100%;accent-color:#F0E15A;cursor:pointer;height:6px;margin-top:8px;">
+        <div class="unit" style="display:flex;justify-content:space-between"><span>0 %</span><span>2 %</span><span>4 %</span></div>
+      </div>
+      <div class="param-group-title">Betrachtungszeitraum</div>
+      <div class="param-item" style="grid-column:1/-1">
+        <label>Laufzeit — <span id="years_label" style="color:var(--gold);font-weight:700;font-size:16px">20 Jahre</span></label>
+        <input type="range" id="years" min="10" max="30" step="1" value="20" style="width:100%;accent-color:#F0E15A;cursor:pointer;height:6px;margin-top:8px;">
+        <div class="unit" style="display:flex;justify-content:space-between"><span>10 J.</span><span>15 J.</span><span>20 J.</span><span>25 J.</span><span>30 J.</span></div>
+      </div>
+      <div class="param-group-title">Mit Photovoltaikanlage (10 kWp + Speicher)</div>
+      <div class="param-item">
+        <label>PV-Rate monatlich</label>
+        <input type="number" id="pv_monthly" value="186">
+        <div class="unit">€ / Monat (fix, 15 J.)</div>
+      </div>
+      <div class="param-item">
+        <label>Erwartete Produktion p.a.</label>
+        <input type="number" id="pv_production" value="9000">
+        <div class="unit">kWh / Jahr (Anlagenertrag)</div>
+      </div>
+      <div class="param-item">
+        <label>Einspeisevergütung</label>
+        <input type="number" id="feed_rate" value="0.079" step="0.001">
+        <div class="unit">€ / kWh (EEG fix)</div>
+      </div>
+
+      <!-- Berechnete Werte: Eigenverbrauch, Einspeisung, Reststrom -->
+      <div style="grid-column:1/-1;background:rgba(240,225,90,0.06);border:1px solid rgba(240,225,90,0.2);border-radius:12px;padding:16px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;">
+        <div>
+          <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">⚡ Eigenverbrauch (70 % Prod.)</div>
+          <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--gold);" id="calc_eigenverbrauch">–</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">kWh / Jahr</div>
+        </div>
+        <div>
+          <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">↑ Einspeisung ins Netz</div>
+          <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--blue);" id="calc_einspeisung">–</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">kWh / Jahr → <span id="calc_feed_eur">–</span> €/J.</div>
+        </div>
+        <div>
+          <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">🔌 Reststrom Zukauf</div>
+          <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--muted2);" id="calc_reststrom">–</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">kWh / Jahr</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WÄRMEPUMPEN-OPTION -->
+  <div class="wp-section" id="wp_section">
+
+    <!-- Toggle -->
+    <button class="wp-toggle-bar" type="button" onclick="toggleWP();return false;" style="width:100%;text-align:left;cursor:pointer;background:none;">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div class="wp-toggle-icon">🔥</div>
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:var(--text);">Wärmepumpen-Vergleich</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;">Heizkosten Gas / Öl vs. PV + Wärmepumpe einrechnen</div>
+        </div>
+      </div>
+      <div class="wp-toggle-switch" id="wp_switch">
+        <div class="wp-toggle-knob" id="wp_knob"></div>
+      </div>
+    </button>
+
+    <!-- Eingaben — nur sichtbar wenn aktiv -->
+    <div class="wp-inputs" id="wp_inputs">
+      <div class="params-card" style="margin-top:16px;margin-bottom:0;">
+        <div class="section-label">Heizkosten aktuell</div>
+        <div class="params-grid">
+
+          <!-- Heizart -->
+          <div class="param-item" style="grid-column:1/-1;">
+            <label>Aktuelle Heizart</label>
+            <div class="wp-heizart-grid">
+              <div class="wp-heizart-btn active" id="btn_gas" onclick="setHeizart('gas')">
+                <div class="wh-icon">🔵</div>
+                <div class="wh-label">Erdgas</div>
+              </div>
+              <div class="wp-heizart-btn" id="btn_oel" onclick="setHeizart('oel')">
+                <div class="wh-icon">🟤</div>
+                <div class="wh-label">Heizöl</div>
+              </div>
+              <div class="wp-heizart-btn" id="btn_pellet" onclick="setHeizart('pellet')">
+                <div class="wh-icon">🟡</div>
+                <div class="wh-label">Pellets</div>
+              </div>
+              <div class="wp-heizart-btn" id="btn_nachtspeicher" onclick="setHeizart('nachtspeicher')">
+                <div class="wh-icon">⚡</div>
+                <div class="wh-label">Nachtspeicher</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Verbrauch & Preis -->
+          <div class="param-item">
+            <label id="wp_verbrauch_label">Jahresverbrauch Gas</label>
+            <input type="number" id="wp_verbrauch" value="20000">
+            <div class="unit" id="wp_verbrauch_unit">kWh / Jahr</div>
+          </div>
+          <div class="param-item">
+            <label id="wp_preis_label">Gaspreis</label>
+            <input type="number" id="wp_preis" value="0.12" step="0.01">
+            <div class="unit" id="wp_preis_unit">€ / kWh</div>
+          </div>
+          <div class="param-item">
+            <label>Wartung / Schornsteinfeger</label>
+            <input type="number" id="wp_wartung" value="300">
+            <div class="unit">€ / Jahr (pauschal)</div>
+          </div>
+          <div class="param-item">
+            <label>Preissteigerung Heizung p.a.</label>
+            <input type="number" id="wp_inflation" value="5" step="0.5">
+            <div class="unit">% / Jahr</div>
+          </div>
+
+          <!-- Berechnete Heizkosten — automatisch -->
+          <div style="grid-column:1/-1;background:rgba(192,57,43,0.06);border:1px solid rgba(192,57,43,0.2);border-radius:12px;padding:16px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;">
+            <div>
+              <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">🔥 Heizkosten / Monat</div>
+              <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#f87171;" id="wp_calc_monat">–</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px;">Brennstoff + Wartung</div>
+            </div>
+            <div>
+              <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">📅 Heizkosten / Jahr</div>
+              <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#f87171;" id="wp_calc_jahr">–</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px;">inkl. Wartung</div>
+            </div>
+            <div>
+              <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">❄️ Nutzwärme / Jahr</div>
+              <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--muted2);" id="wp_calc_nutz">–</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px;">kWh (Wirkungsgrad <span id="wp_wirkungsgrad_label">95</span> %)</div>
+            </div>
+          </div>
+
+          <!-- WP-Parameter -->
+          <div class="param-group-title" style="grid-column:1/-1;">Wärmepumpe</div>
+          <div class="param-item">
+            <label>WP-Investition (Bruttokosten)</label>
+            <input type="number" id="wp_invest" value="15000">
+            <div class="unit">€ (Anschaffung + Installation)</div>
+          </div>
+          <div class="param-item">
+            <label>WP-Finanzierungsrate</label>
+            <input type="number" id="wp_rate" value="120">
+            <div class="unit">€ / Monat (Laufzeit 15 J.)</div>
+          </div>
+          <div class="param-item">
+            <label>JAZ Wärmepumpe</label>
+            <input type="number" id="wp_jaz" value="3.5" step="0.1">
+            <div class="unit">Jahresarbeitszahl (typ. 3–4)</div>
+          </div>
+          <div class="param-item">
+            <label>PV-Eigenverbrauch WP <span id="wp_ev_pct_label" style="color:var(--gold);font-weight:700;">40 %</span></label>
+            <input type="range" id="wp_eigenverbrauch_quote" min="30" max="60" step="5" value="40" style="width:100%;accent-color:#F0E15A;cursor:pointer;height:6px;margin-top:8px;">
+            <div class="unit">Anteil WP-Strombedarf aus PV (30–60 %)</div>
+          </div>
+
+          <!-- WP-Strom automatisch -->
+          <div style="grid-column:1/-1;background:rgba(29,131,73,0.06);border:1px solid rgba(29,131,73,0.2);border-radius:12px;padding:16px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;">
+            <div>
+              <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">⚡ WP-Strom / Jahr</div>
+              <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#4ade80;" id="wp_calc_strom">–</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px;">kWh (Nutzwärme ÷ JAZ)</div>
+            </div>
+            <div>
+              <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">☀️ Aus PV gedeckt</div>
+              <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#4ade80;" id="wp_calc_pv_anteil">–</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px;">kWh (aus Eigenverbrauch)</div>
+            </div>
+            <div>
+              <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">🔌 Reststrom WP</div>
+              <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--gold);" id="wp_calc_reststrom">–</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px;">kWh (Zukauf × <span id="wp_strompreis_label">0,34</span> €)</div>
+            </div>
+          </div>
+
+          <!-- Förderung -->
+          <div class="param-item" style="grid-column:1/-1;">
+            <label>Staatliche Förderung (BEG)</label>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:4px;">
+              <div class="wp-heizart-btn" id="btn_f0" onclick="setFoerderung(0)">
+                <div class="wh-icon">🚫</div>
+                <div class="wh-label">Keine</div>
+              </div>
+              <div class="wp-heizart-btn active" id="btn_f30" onclick="setFoerderung(30)">
+                <div class="wh-icon">🟢</div>
+                <div class="wh-label">30 %</div>
+              </div>
+              <div class="wp-heizart-btn" id="btn_f50" onclick="setFoerderung(50)">
+                <div class="wh-icon">🟡</div>
+                <div class="wh-label">50 %</div>
+              </div>
+              <div class="wp-heizart-btn" id="btn_f70" onclick="setFoerderung(70)">
+                <div class="wh-icon">⭐</div>
+                <div class="wh-label">70 %</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Berechnete WP-Kosten nach Förderung -->
+          <div style="grid-column:1/-1;background:rgba(240,225,90,0.06);border:1px solid rgba(240,225,90,0.2);border-radius:12px;padding:16px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;">
+            <div>
+              <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">💰 Förderung</div>
+              <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--gold);" id="wp_foerder_eur">–</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px;" id="wp_foerder_pct">0 % von Bruttokosten</div>
+            </div>
+            <div>
+              <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">🔧 Nettokosten WP</div>
+              <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--green);" id="wp_netto_invest">–</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px;">nach Förderung</div>
+            </div>
+            <div>
+              <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">📅 Rate / Monat</div>
+              <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--blue);" id="wp_rate_netto">–</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px;">nach Förderung (15 J.)</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- WP Ergebnis-Kacheln -->
+      <div class="wp-results" id="wp_results">
+        <div class="wp-res-card wp-res-bad">
+          <div class="wp-res-icon">🔥</div>
+          <div class="wp-res-label" id="wp_label_alt">Gas / Öl — aktuell</div>
+          <div class="wp-res-main" id="wp_kosten_monat">–</div>
+          <div class="wp-res-sub" id="wp_kosten_jahr">– / Jahr</div>
+          <div class="wp-res-detail">
+            <div class="wp-rd"><div class="wp-rdk">Heute / Monat</div><div class="wp-rdv" id="wp_heute">–</div></div>
+            <div class="wp-rd"><div class="wp-rdk">In 10 J. / Monat</div><div class="wp-rdv" id="wp_10j">–</div></div>
+            <div class="wp-rd"><div class="wp-rdk">Gesamt <span class="dyn-years">20</span> J.</div><div class="wp-rdv" id="wp_gesamt_alt">–</div></div>
+          </div>
+        </div>
+
+        <div class="wp-res-card wp-res-good">
+          <div class="wp-res-icon">♻️</div>
+          <div class="wp-res-label">PV + Wärmepumpe</div>
+          <div class="wp-res-main" id="wp_pv_monat">–</div>
+          <div class="wp-res-sub" id="wp_pv_sub">– / Monat (Rate, J. 1–15)</div>
+          <div class="wp-res-detail">
+            <div class="wp-rd"><div class="wp-rdk">Rate / Monat (nach Förderung)</div><div class="wp-rdv" id="wp_rate_display">–</div></div>
+            <div class="wp-rd"><div class="wp-rdk">Ab J. 16: Rate</div><div class="wp-rdv" style="color:var(--green)">0 €</div></div>
+            <div class="wp-rd"><div class="wp-rdk">WP-Betriebsstrom</div><div class="wp-rdv" id="wp_betrieb">–</div></div>
+            <div class="wp-rd"><div class="wp-rdk">Nettokosten nach Förderung</div><div class="wp-rdv" id="wp_invest_val">–</div></div>
+            <div class="wp-rd"><div class="wp-rdk">Gesamt <span class="dyn-years">20</span> J.</div><div class="wp-rdv" id="wp_gesamt_pv">–</div></div>
+          </div>
+        </div>
+
+        <div class="wp-res-card wp-res-diff">
+          <div class="wp-res-icon">💰</div>
+          <div class="wp-res-label">Gesamtvorteil WP + PV</div>
+          <div class="wp-res-main" id="wp_diff_total">–</div>
+          <div class="wp-res-sub">über <span class="dyn-years">20</span> Jahre</div>
+          <div class="wp-res-detail">
+            <div class="wp-rd"><div class="wp-rdk">Heizkosten-Ersparnis gesamt</div><div class="wp-rdv" id="wp_heiz_ersparnis">–</div></div>
+            <div class="wp-rd"><div class="wp-rdk">Stromkosten-Ersparnis gesamt</div><div class="wp-rdv" id="wp_strom_ersparnis">–</div></div>
+            <div class="wp-rd"><div class="wp-rdk">Ersparnis / Monat (J. 1)</div><div class="wp-rdv" id="wp_diff_monat">–</div></div>
+            <div class="wp-rd"><div class="wp-rdk">Ersparnis / Monat (ab J. 16)</div><div class="wp-rdv" id="wp_diff_monat_nach">–</div></div>
+            <div class="wp-rd"><div class="wp-rdk">Break-Even WP-Investition</div><div class="wp-rdv" id="wp_breakeven">–</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SZENARIEN -->
+  <div id="wp_active_banner" style="display:none;align-items:center;gap:14px;background:rgba(240,225,90,0.07);border:1px solid rgba(240,225,90,0.25);border-radius:14px;padding:14px 20px;margin-bottom:20px;">
+    <div style="font-size:24px">🔥</div>
+    <div style="flex:1">
+      <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:800;color:var(--gold)">Wärmepumpe aktiv — alle Szenarien inkl. WP-Strombedarf</div>
+      <div style="font-size:12px;color:var(--muted2);margin-top:3px">
+        Zusätzlicher Netzbezug WP: <strong style="color:var(--text)" id="wp_banner_kwh">–</strong> kWh/J. &nbsp;·&nbsp;
+        WP-Rate (15 J.): <strong style="color:var(--text)" id="wp_banner_rate">–</strong>/Monat
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label" style="padding-left:2px">Gesamtkosten über <span id="sc_years_label">20</span> Jahre — drei Szenarien</div>
+  <div class="scenarios">
+    <div class="sc bad">
+      <div class="sc-icon">🔌</div>
+      <div class="sc-title" id="s1_title">Ohne PV</div>
+      <div class="sc-desc" id="s1_desc">Vollständiger Netzbezug mit jährlicher Preissteigerung — keinerlei eigene Erzeugung</div>
+      <div class="sc-main-label" id="s1_main_label">Gesamtkosten <span class="dyn-years">20</span> J.</div>
+      <div class="sc-main-value" id="s1_total">–</div>
+      <div class="sc-sub" id="s1_avg">ø – / Monat</div>
+      <div class="sc-rows">
+        <div class="sc-row"><div class="k">Heute / Monat</div><div class="v" id="s1_m0">–</div></div>
+        <div class="sc-row"><div class="k">In 10 J. / Monat</div><div class="v" id="s1_m10">–</div></div>
+        <div class="sc-row"><div class="k" id="s1_label_mx">In 20 J. / Monat</div><div class="v" id="s1_mx">–</div></div>
+        <div class="sc-row sc-row-wp" style="display:none"><div class="k">🔥 Heizkosten / Monat</div><div class="v" id="s1_heiz_monat">–</div></div>
+        <div class="sc-row sc-row-wp" style="display:none"><div class="k">🔥 Heizkosten gesamt</div><div class="v" id="s1_heiz_gesamt">–</div></div>
+        <div class="sc-row"><div class="k">Einnahmen gesamt</div><div class="v">0 €</div></div>
+      </div>
+    </div>
+    <div class="sc mid">
+      <div class="sc-icon">⚡</div>
+      <div class="sc-title" id="s2_title">PV ohne Einspeisung</div>
+      <div class="sc-desc">Rate nur 15 Jahre — danach 0 €. Ab Jahr 16 nur noch kleiner Reststrom-Zukauf.</div>
+      <div class="sc-main-label">Gesamtkosten <span class="dyn-years">20</span> J.</div>
+      <div class="sc-main-value" id="s2_total">–</div>
+      <div class="sc-sub" id="s2_avg">ø – / Monat</div>
+      <div class="sc-rows">
+        <div class="sc-row"><div class="k">PV-Rate (Jahr 1–15)</div><div class="v" id="s2_rate">–</div></div>
+        <div class="sc-row"><div class="k">Ab Jahr 16: Rate</div><div class="v" style="color:var(--green)">0 €</div></div>
+        <div class="sc-row"><div class="k">Reststrom / Jahr (heute)</div><div class="v" id="s2_rest0">–</div></div>
+        <div class="sc-row"><div class="k">Rate gesamt (15 J.)</div><div class="v" id="s2_ratetotal">–</div></div>
+        <div class="sc-row sc-row-wp" style="display:none"><div class="k">🔥 WP-Rate (J. 1–15)</div><div class="v" id="s2_wp_rate">–</div></div>
+        <div class="sc-row sc-row-wp" style="display:none"><div class="k">🔥 WP-Strom / J.</div><div class="v" id="s2_wp_rest">–</div></div>
+        <div class="sc-row"><div class="k">Einnahmen gesamt</div><div class="v">0 €</div></div>
+      </div>
+    </div>
+    <div class="sc best">
+      <div class="sc-icon">☀️</div>
+      <div class="sc-title" id="s3_title">PV + Einspeisung</div>
+      <div class="sc-desc">Rate nur 15 Jahre — danach kostenloser Eigenstrom · EEG-Vergütung 20 J. gesichert.</div>
+      <div class="sc-main-label">Nettokosten <span class="dyn-years">20</span> J.</div>
+      <div class="sc-main-value" id="s3_total">–</div>
+      <div class="sc-sub" id="s3_avg">ø – / Monat (netto)</div>
+      <div class="sc-rows">
+        <div class="sc-row"><div class="k">PV-Rate (Jahr 1–15)</div><div class="v" id="s3_rate">–</div></div>
+        <div class="sc-row"><div class="k">Ab Jahr 16: Rate</div><div class="v" style="color:var(--green)">0 €</div></div>
+        <div class="sc-row"><div class="k">Reststrom / Jahr · Monat</div><div class="v" id="s3_rest0">–</div></div>
+        <div class="sc-row"><div class="k">Einspeisevergütung / J. · Monat</div><div class="v" id="s3_feed">–</div></div>
+        <div class="sc-row sc-row-wp" style="display:none"><div class="k">🔥 WP-Rate (J. 1–15)</div><div class="v" id="s3_wp_rate">–</div></div>
+        <div class="sc-row sc-row-wp" style="display:none"><div class="k">🔥 WP-Strom / J.</div><div class="v" id="s3_wp_rest">–</div></div>
+        <div class="sc-row"><div class="k">Netto / Monat (J. 1–15)</div><div class="v" id="s3_mges">–</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIFF BOX -->
+  <div class="diff-box" id="main_diff_box" style="grid-template-columns:1fr 1fr 1fr;">
+    <div id="diff1_box">
+      <div class="di-label" id="diff1_label">PV-Vorteil (ohne Einspeisung)</div>
+      <div class="di-val green" id="diff1">–</div>
+      <div class="di-sub" id="diff1_sub">Ersparnis vs. kein PV über <span class="dyn-years">20</span> J.</div>
+    </div>
+    <div id="diff2_box">
+      <div class="di-label">Bonus Einspeisevergütung</div>
+      <div class="di-val sun" id="diff2">–</div>
+      <div class="di-sub">Einnahmen über <span class="dyn-years">20</span> J. (EEG fix)</div>
+    </div>
+    <div id="diff3_box">
+      <div class="di-label" id="diff3_label">Gesamtvorteil mit Einspeisung</div>
+      <div class="di-val green" id="diff3">–</div>
+      <div class="di-sub" id="diff3_sub">vs. kein PV über <span class="dyn-years">20</span> Jahre</div>
+    </div>
+    <div id="diff_heiz_box" style="display:none">
+      <div class="di-label">🔥 Heizkosten-Ersparnis</div>
+      <div class="di-val sun" id="diff_heiz">–</div>
+      <div class="di-sub">Heizkosten abzgl. WP-Kosten über <span class="dyn-years">20</span> J.</div>
+    </div>
+    <div id="diff_gesamt_box" style="display:none">
+      <div class="di-label" style="color:var(--gold)">⚡ GESAMTVORTEIL PV + WP</div>
+      <div class="di-val green" id="diff_gesamt" style="font-size:clamp(22px,4vw,34px)">–</div>
+      <div class="di-sub">Strom + Heizung gespart über <span class="dyn-years">20</span> J.</div>
+    </div>
+  </div>
+
+  <!-- AMORTISATION GAUGE -->
+  <div class="amort-card">
+    <div class="amort-inner">
+
+      <!-- Linke Seite: Gauge -->
+      <div class="amort-gauge-wrap">
+        <canvas id="gaugeCanvas" width="220" height="140"></canvas>
+        <div class="amort-gauge-center">
+          <div class="gc-val" id="amort_breakeven">–</div>
+          <div class="gc-label">Break-Even</div>
+        </div>
+      </div>
+
+      <!-- Rechte Seite: Infos -->
+      <div class="amort-right">
+        <div class="amort-eyebrow-label">Break-Even · Amortisation</div>
+        <div class="amort-headline" id="amort_title">–</div>
+        <div class="amort-desc-text" id="amort_desc">–</div>
+
+        <!-- Vergleich -->
+        <div class="amort-compare">
+          <div class="ac-block">
+            <div class="ac-label" id="amort_ohne_label">Strom ohne PV</div>
+            <div class="ac-val" style="color:#f87171;" id="amort_ohne">–</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">/ Monat</div>
+            <div id="amort_ohne_detail" style="display:none;margin-top:8px;font-size:11px;color:var(--muted);line-height:1.8;">
+              <div>🔌 Strom: <span id="amort_d_strom" style="color:#f87171;font-weight:700">–</span></div>
+              <div>🔥 Heizung: <span id="amort_d_heiz" style="color:#f87171;font-weight:700">–</span></div>
+            </div>
+          </div>
+          <div class="ac-arrow">→</div>
+          <div class="ac-block">
+            <div class="ac-label" id="amort_mit_label">Mit PV (netto)</div>
+            <div class="ac-val" style="color:#4ade80;" id="amort_mit">–</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">/ Monat</div>
+            <div id="amort_mit_detail" style="display:none;margin-top:8px;font-size:11px;color:var(--muted);line-height:1.8;">
+              <div>☀️ PV-Rate: <span id="amort_d_pv" style="color:#4ade80;font-weight:700">–</span></div>
+              <div>🔥 WP-Rate: <span id="amort_d_wp" style="color:#4ade80;font-weight:700">–</span></div>
+              <div>⚡ Reststrom: <span id="amort_d_rest" style="color:#4ade80;font-weight:700">–</span></div>
+              <div>📤 Einspeisung: <span id="amort_d_einsp" style="color:#4ade80;font-weight:700">–</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ersparnis-Pill -->
+        <div class="amort-saving-pill" id="amort_pill">
+          <span>💰</span>
+          <span id="amort_mid">–</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CHART -->
+  <div class="chart-card">
+    <div class="section-label" style="margin-bottom:20px">Kostenverlauf im Jahresvergleich</div>
+    <div class="chart-wrap">
+      <canvas id="myChart"></canvas>
+    </div>
+  </div>
+
+  <!-- BALKEN -->
+  <div class="bars-card">
+    <div class="section-label" style="margin-bottom:22px">Monatliche Belastung im Vergleich</div>
+    <div class="bar-row">
+      <div class="bar-label"><span class="name" id="bar1_name">🔌 Strom ohne PV — heute</span><span class="amt c-red" id="bl1">–</span></div>
+      <div class="bar-track"><div class="bar-fill bf-red" id="bb1" style="width:0%"></div></div>
+    </div>
+    <div class="bar-row" id="bar2_label">
+      <div class="bar-label"><span class="name">🔌 Strom ohne PV — in 20 Jahren</span><span class="amt c-red" id="bl2">–</span></div>
+      <div class="bar-track"><div class="bar-fill bf-red" id="bb2" style="width:0%"></div></div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label"><span class="name" id="bar3_name">⚡ PV-Rate + Reststrom (ohne Einspeisung)</span><span class="amt c-blue" id="bl3">–</span></div>
+      <div class="bar-track"><div class="bar-fill bf-blue" id="bb3" style="width:0%"></div></div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label"><span class="name" id="bar4_name">☀️ PV-Nettorate nach Einspeisevergütung</span><span class="amt c-grn" id="bl4">–</span></div>
+      <div class="bar-track"><div class="bar-fill bf-grn" id="bb4" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <!-- KONTEXT-RECHNER -->
+  <div class="kontext-card">
+    <div class="section-label">Was könnten Sie mit dem Vorteil kaufen?</div>
+    <p style="font-size:13px;color:var(--muted2);margin-bottom:4px;">Der Gesamtvorteil von <strong id="kontext_vorteil" style="color:var(--gold)">–</strong> über <span class="dyn-years">20</span> Jahre entspricht… <span id="kontext_suffix"></span></p>
+    <div class="kontext-grid">
+      <div class="kontext-item"><div class="ki-emoji">✈️</div><div class="ki-val" id="k_urlaub">–</div><div class="ki-label">Pauschal&shy;urlaube (à 1.500 €)</div></div>
+      <div class="kontext-item"><div class="ki-emoji">🚗</div><div class="ki-val" id="k_auto">–</div><div class="ki-label">Mittelklasse&shy;autos (à 30.000 €)</div></div>
+      <div class="kontext-item"><div class="ki-emoji">⛽</div><div class="ki-val" id="k_tank">–</div><div class="ki-label">Tank&shy;füllungen (à 80 €)</div></div>
+      <div class="kontext-item"><div class="ki-emoji">🛒</div><div class="ki-val" id="k_einkauf">–</div><div class="ki-label">Wochen&shy;einkäufe (à 150 €)</div></div>
+      <div class="kontext-item"><div class="ki-emoji">☕</div><div class="ki-val" id="k_kaffee">–</div><div class="ki-label">Café-Besuche (à 5 €)</div></div>
+      <div class="kontext-item"><div class="ki-emoji">🍕</div><div class="ki-val" id="k_pizza">–</div><div class="ki-label">Restaurant&shy;besuche (à 40 €)</div></div>
+    </div>
+  </div>
+
+    <!-- PSYCHO 2: LIVE-TICKER -->
+  <div class="kontext-card" id="psycho_ticker">
+    <div class="section-label">⚡ Ihre Stromkosten — live</div>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:12px;">Seit Beginn dieses Gesprächs haben Sie bereits bezahlt:</p>
+    <div id="clock_display" style="font-family:'Syne',sans-serif;font-size:clamp(36px,6vw,60px);font-weight:900;color:var(--gold);letter-spacing:-1px;line-height:1;margin-bottom:12px;">0,00 €</div>
+    <p style="font-size:12px;color:var(--muted);" id="clock_note">–</p>
+  </div>
+
+  <!-- PSYCHO 5: WARTE-KOSTEN -->
+  <div class="kontext-card" id="psycho_warten">
+    <div class="section-label">🕐 Was kostet das Warten?</div>
+    <p style="font-family:'Syne',sans-serif;font-size:clamp(16px,2.5vw,22px);font-weight:800;margin-bottom:8px;">Jeder Monat ohne PV kostet Sie <span id="wait_vorteil_mo" style="color:var(--gold)">–</span> Netto-Vorteil.</p>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:20px;">Wählen Sie, wann Sie sich entscheiden — und sehen Sie was das kostet.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px;">
+      <button style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:100px;padding:8px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;" onclick="setWait(1,this)">In 1 Monat</button>
+      <button style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:100px;padding:8px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;" onclick="setWait(3,this)">In 3 Monaten</button>
+      <button id="wait_btn_default" style="background:rgba(240,225,90,0.1);border:1px solid rgba(240,225,90,0.4);border-radius:100px;padding:8px 16px;color:var(--gold);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;" onclick="setWait(6,this)">In 6 Monaten</button>
+      <button style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:100px;padding:8px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;" onclick="setWait(12,this)">In 1 Jahr</button>
+      <button style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:100px;padding:8px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;" onclick="setWait(24,this)">In 2 Jahren</button>
+    </div>
+    <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:22px;display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div>
+        <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Verlorene Ersparnis</div>
+        <div id="wait_verlust" style="font-family:'Syne',sans-serif;font-size:28px;font-weight:900;color:#EF4444;line-height:1;">–</div>
+        <div id="wait_verlust_sub" style="font-size:11px;color:var(--muted);margin-top:3px;"></div>
+      </div>
+      <div>
+        <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Strom-Mehrkosten</div>
+        <div id="wait_strom" style="font-family:'Syne',sans-serif;font-size:28px;font-weight:900;color:var(--gold);line-height:1;">–</div>
+        <div id="wait_strom_sub" style="font-size:11px;color:var(--muted);margin-top:3px;"></div>
+      </div>
+    </div>
+    <div id="wait_date" style="margin-top:14px;font-size:13px;color:var(--muted);"></div>
+  </div>
+
+  <!-- PSYCHO 6: RENTER -->
+  <div class="kontext-card" id="psycho_zukunft">
+    <div class="section-label">🌱 Ihr Leben — mit PV</div>
+    <p style="font-family:'Syne',sans-serif;font-size:clamp(18px,3vw,28px);font-weight:800;line-height:1.2;margin-bottom:6px;">In 20 Jahren haben Sie <span id="future_betrag" style="color:var(--gold)">–</span> mehr auf dem Konto.</p>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:22px;">Was bedeutet das für Ihr Leben?</p>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;flex-wrap:wrap;">
+      <span style="font-size:14px;color:var(--muted);">Ich bin heute</span>
+      <input type="number" id="future_age" value="45" min="18" max="80"
+        style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:8px 12px;color:var(--text);font-family:'Syne',sans-serif;font-size:18px;font-weight:700;width:80px;text-align:center;outline:none;"
+        oninput="updateFuture()">
+      <span style="font-size:14px;color:var(--muted);">Jahre alt.</span>
+    </div>
+    <div id="future_timeline" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;"></div>
+    <p id="future_tagline" style="margin-top:20px;font-size:14px;color:var(--muted);text-align:center;line-height:1.6;"></p>
+  </div>
+
+  <!-- JAHRESVERLAUF -->
+  <div class="tl-card">
+    <div class="tl-intro">Kumulierte Kosten im Jahresverlauf · <span class="dyn-years">20</span> Jahre</div>
+    <div id="tbl"></div>
+  </div>
+
+  <div class="hint">
+    <strong>Berechnungsgrundlagen:</strong>
+    Die PV-Rate läuft exakt 15 Jahre — danach entfällt sie auf 0 €.
+    Der Reststromzukauf steigt jährlich mit der Preissteigerungsrate.
+    Die Einspeisevergütung ist nach EEG für 20 Jahre fix.
+    Ab Jahr 16 zahlt der PV-Kunde nur noch den kleinen Reststromanteil.
+  </div>
+
+  <!-- BÖRSENSTROM -->
+  <div class="boerse-section">
+    <div class="eyebrow" style="text-align:center;margin-bottom:12px">Bonus-Vergleich</div>
+    <h2 style="font-family:'Syne',sans-serif;font-size:clamp(20px,4vw,36px);font-weight:800;text-align:center;margin-bottom:10px;">
+      PV mit Normaltarif<br><span style="color:var(--gold)">vs. PV mit Börsenstrom</span>
+    </h2>
+    <p style="text-align:center;color:var(--muted2);font-size:14px;font-weight:300;margin-bottom:36px;max-width:520px;margin-left:auto;margin-right:auto;">
+      Wie viel günstiger wird es, wenn der Kunde zusätzlich auf einen dynamischen Börsenstromtarif wechselt?
+    </p>
+    <div class="params-card" style="margin-bottom:28px">
+      <div class="section-label">Börsenstrom-Parameter</div>
+      <div class="params-grid">
+        <div class="param-item">
+          <label>Börsenstrompreis</label>
+          <input type="number" id="boerse_price" value="0.21" step="0.01">
+          <div class="unit">€ / kWh (dynamischer Tarif)</div>
+        </div>
+        <div class="param-item">
+          <label>Grundgebühr dyn. Tarif</label>
+          <input type="number" id="boerse_base" value="12">
+          <div class="unit">€ / Monat</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;font-size:12px;color:var(--muted);padding-top:12px;border-top:1px solid var(--border)">
+        ↑ Verbrauch, Reststrom, PV-Rate und Einspeisung werden automatisch aus den obigen Eingaben übernommen.
+      </div>
+    </div>
+    <div class="scenarios">
+      <div class="sc mid">
+        <div class="sc-icon">☀️</div>
+        <div class="sc-title">PV + Normaltarif + Einspeisung</div>
+        <div class="sc-desc">PV-Rate 15 J. · Reststrom zum normalen Arbeitspreis · EEG-Einspeisung abgezogen</div>
+        <div class="sc-main-label">Netto / Monat (J. 1–15)</div>
+        <div class="sc-main-value" id="cmp_pv_normal_m">–</div>
+        <div class="sc-sub" id="cmp_pv_normal_m16_sub">ab J. 16: –</div>
+        <div class="sc-rows">
+          <div class="sc-row"><div class="k">Reststrom</div><div class="v"><span id="cmp_rest_kwh1">–</span> kWh × <span id="cmp_price1">–</span> €</div></div>
+          <div class="sc-row"><div class="k">Monat ab J. 16</div><div class="v" id="cmp_pv_normal_m16">–</div></div>
+          <div class="sc-row"><div class="k">Gesamt <span class="dyn-years">20</span> J.</div><div class="v" id="cmp_pv_normal_total">–</div></div>
+        </div>
+      </div>
+      <div class="sc best">
+        <div class="sc-icon">⚡☀️</div>
+        <div class="sc-title">PV + Börsenstrom + Einspeisung</div>
+        <div class="sc-desc">PV-Rate 15 J. · Reststrom zum günstigen Börsenstrompreis · EEG-Einspeisung abgezogen</div>
+        <div class="sc-main-label">Netto / Monat (J. 1–15)</div>
+        <div class="sc-main-value" id="cmp_pv_boerse_m">–</div>
+        <div class="sc-sub" id="cmp_pv_boerse_m16_sub">ab J. 16: –</div>
+        <div class="sc-rows">
+          <div class="sc-row"><div class="k">Reststrom</div><div class="v"><span id="cmp_rest_kwh2">–</span> kWh × <span id="cmp_boerse_price">–</span> €</div></div>
+          <div class="sc-row"><div class="k">Monat ab J. 16</div><div class="v" id="cmp_pv_boerse_m16">–</div></div>
+          <div class="sc-row"><div class="k">Gesamt <span class="dyn-years">20</span> J.</div><div class="v" id="cmp_pv_boerse_total">–</div></div>
+        </div>
+      </div>
+      <div class="sc" style="background:linear-gradient(160deg,#1a1500,#201a00);border-color:rgba(240,225,90,0.3);">
+        <div class="sc-icon">💰</div>
+        <div class="sc-title" style="color:var(--gold)">Ersparnis Börsenstrom</div>
+        <div class="sc-desc">Vorteil von PV+Börsenstrom gegenüber PV+Normaltarif</div>
+        <div class="sc-main-label">Ersparnis / Monat (J. 1–15)</div>
+        <div class="sc-main-value" style="color:var(--gold)" id="cmp_diff_m">–</div>
+        <div class="sc-sub" id="cmp_diff_m16_sub">ab J. 16: –</div>
+        <div class="sc-rows" style="border-color:rgba(240,225,90,0.15);">
+          <div class="sc-row"><div class="k">Ersparnis Monat ab J. 16</div><div class="v" style="color:var(--gold)" id="cmp_diff_m16">–</div></div>
+          <div class="sc-row"><div class="k">Ersparnis Gesamt <span class="dyn-years">20</span> J.</div><div class="v" style="color:var(--gold)" id="cmp_diff_total">–</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="hint">
+      <strong>Hinweis Börsenstrom:</strong>
+      Der Börsenstrompreis ist variabel — hier als heutiger Fixwert.
+      Mit PV wird der Börsenstrompreis nur noch für den Reststromzukauf (<span id="hint_rest_kwh">–</span> kWh/Jahr) relevant.
+      Ab Jahr 16 ist die Rate abbezahlt — Eigenverbrauch kostenlos.
+    </div>
+
+    <!-- BREAK-EVEN BÖRSENSTROM -->
+    <div class="amort-card" style="margin-top:28px;margin-bottom:0;">
+      <div class="amort-inner">
+        <div class="amort-gauge-wrap">
+          <canvas id="gaugeCanvas2" width="220" height="140"></canvas>
+          <div class="amort-gauge-center">
+            <div class="gc-val" id="amort2_breakeven">–</div>
+            <div class="gc-label">Break-Even</div>
+          </div>
+        </div>
+        <div class="amort-right">
+          <div class="amort-eyebrow-label">Break-Even · Mit Börsenstrom</div>
+          <div class="amort-headline" id="amort2_title">–</div>
+          <div class="amort-desc-text" id="amort2_desc">–</div>
+          <div class="amort-compare">
+            <div class="ac-block">
+              <div class="ac-label" id="amort2_ohne_label">Strom ohne PV</div>
+              <div class="ac-val" style="color:#f87171;" id="amort2_ohne">–</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px;">/ Monat</div>
+            </div>
+            <div class="ac-arrow">→</div>
+            <div class="ac-block">
+              <div class="ac-label" id="amort2_mit_label">PV + Börsenstrom</div>
+              <div class="ac-val" style="color:#4ade80;" id="amort2_mit">–</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px;">/ Monat</div>
+            </div>
+          </div>
+          <div class="amort-saving-pill">
+            <span>⚡</span>
+            <span id="amort2_pill">–</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- STROMPREIS SZENARIO -->
+  <div class="kontext-card" id="card_szenario">
+    <div class="section-label">⚡ Was wenn der Strompreis weiter steigt?</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:20px;">Verschieben Sie den Regler — alle Werte aktualisieren sich live.</p>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:4px;">
+      <span style="font-size:14px;color:var(--muted);">Zusätzlicher Preisanstieg:</span>
+      <span id="preis_szenario_label" style="font-family:'Syne',sans-serif;font-size:24px;font-weight:900;color:var(--gold);">+ 0 %</span>
+    </div>
+    <input type="range" id="preis_szenario" min="0" max="50" step="5" value="0"
+      style="width:100%;accent-color:#F0E15A;margin:14px 0 6px;height:6px;cursor:pointer;">
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:20px;">
+      <span>0 %</span><span>+10 %</span><span>+20 %</span><span>+30 %</span><span>+40 %</span><span>+50 %</span>
+    </div>
+    <div class="kontext-grid" style="grid-template-columns:repeat(3,1fr);">
+      <div class="kontext-item">
+        <div class="ki-emoji">💡</div>
+        <div class="ki-val" id="szen_preis" style="font-size:16px;">–</div>
+        <div class="ki-label">Ihr Strompreis dann</div>
+      </div>
+      <div class="kontext-item">
+        <div class="ki-emoji">💰</div>
+        <div class="ki-val" id="szen_ersparnis">–</div>
+        <div class="ki-label">Ersparnis / Monat</div>
+      </div>
+      <div class="kontext-item">
+        <div class="ki-emoji">📈</div>
+        <div class="ki-val" id="szen_vorteil">–</div>
+        <div class="ki-label">Vorteil 20 Jahre</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+var chartInstance = null;
+// Eigenverbrauch-Berechnung: abhängig vom Verhältnis Bedarf/Produktion
+function calcEVHaushalt(pv_production, consumption) {
+  var ratio = consumption / pv_production;
+  if (ratio >= 1.20) return Math.min(pv_production, consumption); // 100%: Bedarf ≥ 120% Produktion
+  if (ratio >= 1.01) return Math.min(pv_production * 0.90, consumption); // 90%: Bedarf 101-119%
+  return Math.min(pv_production * 0.70, consumption * 0.90); // Standard: 70%/90%
+}
+
+var wpActive      = false;
+var heizart       = 'gas';
+var foerderung    = 30;
+var g_wp_extra_kwh  = 0;
+var g_wp_extra_rate = 0;
+var g_heiz_monat    = 0;
+
+
+var heizartConfig = {
+  gas:          { label:'Erdgas',        verbrauchLabel:'Jahresverbrauch Gas',    verbrauchUnit:'kWh / Jahr',   preisLabel:'Gaspreis',       preisUnit:'€ / kWh',   defaultVerbrauch:20000, defaultPreis:0.12, wirkungsgrad:0.95, einheit:'kWh' },
+  oel:          { label:'Heizöl',        verbrauchLabel:'Jahresverbrauch Öl',     verbrauchUnit:'Liter / Jahr', preisLabel:'Heizölpreis',    preisUnit:'€ / Liter', defaultVerbrauch:2000,  defaultPreis:0.95, wirkungsgrad:0.85, einheit:'L',  kwh_pro_einheit:10 },
+  pellet:       { label:'Pellets',       verbrauchLabel:'Jahresverbrauch Pellets',verbrauchUnit:'kg / Jahr',    preisLabel:'Pelletpreis',    preisUnit:'€ / kg',    defaultVerbrauch:4000,  defaultPreis:0.38, wirkungsgrad:0.90, einheit:'kg', kwh_pro_einheit:4.9 },
+  nachtspeicher:{ label:'Nachtspeicher', verbrauchLabel:'Jahresverbrauch Strom',  verbrauchUnit:'kWh / Jahr',   preisLabel:'Nachtstrompreis',preisUnit:'€ / kWh',   defaultVerbrauch:8000,  defaultPreis:0.22, wirkungsgrad:1.00, einheit:'kWh' }
+};
+
+function fmtEur(val) {
+  return val.toLocaleString('de-DE',{style:'currency',currency:'EUR',maximumFractionDigits:0});
+}
+function fmtN(val) {
+  return Math.round(val).toLocaleString('de-DE');
+}
+function stromJahr(c,p,b,inf,y){ return c*p*Math.pow(1+inf/100,y)+b*12; }
+function restJahr(r,p,inf,y){ return r*p*Math.pow(1+inf/100,y); }
+
+function update() {
+
+  var consumption = parseFloat(document.getElementById('consumption').value)||7000;
+  var price       = parseFloat(document.getElementById('price').value)||0.34;
+  var base        = parseFloat(document.getElementById('base').value)||12;
+  var inflation   = parseFloat(document.getElementById('inflation').value);
+  if (isNaN(inflation)) inflation = 3.5;
+  var pv_monthly  = parseFloat(document.getElementById('pv_monthly').value)||186;
+  var feed_rate   = parseFloat(document.getElementById('feed_rate').value)||0.079;
+  var pv_production = parseFloat(document.getElementById('pv_production').value)||9000;
+  if (isNaN(pv_production)) pv_production = 9000;
+  var YEARS       = parseInt(document.getElementById('years').value)||20;
+  var boerse_price= parseFloat(document.getElementById('boerse_price').value)||0.21;
+  var boerse_base = parseFloat(document.getElementById('boerse_base').value)||12;
+
+  // BERECHNUNG aus Produktion — Eigenverbrauchsquote je nach Verhältnis Bedarf/Produktion
+  var eigenverbrauch = calcEVHaushalt(pv_production, consumption);
+  var feed_kwh       = pv_production - eigenverbrauch;                       // Überschuss ins Netz
+  var rest_kwh       = consumption - eigenverbrauch;                         // verbleibender Zukauf
+
+  // Berechnete Werte anzeigen
+  document.getElementById('calc_eigenverbrauch').textContent = Math.round(eigenverbrauch).toLocaleString('de-DE');
+  document.getElementById('calc_einspeisung').textContent    = Math.round(feed_kwh).toLocaleString('de-DE');
+  document.getElementById('calc_feed_eur').textContent       = Math.round(feed_kwh * feed_rate).toLocaleString('de-DE');
+  document.getElementById('calc_reststrom').textContent      = Math.round(rest_kwh).toLocaleString('de-DE');
+
+  // SLIDER LABELS
+  var inflStr = inflation%1===0?inflation.toFixed(0):inflation.toFixed(1);
+  document.getElementById('inflation_label').textContent = inflStr.replace('.',',')+' %';
+  document.getElementById('years_label').textContent = YEARS+' Jahre';
+
+  // Szenario-Titel sofort setzen (auch ganz oben damit es nie veraltet angezeigt wird)
+  document.getElementById('s2_title').textContent = wpActive ? 'PV + WP ohne Einspeisung' : 'PV ohne Einspeisung';
+  document.getElementById('s3_title').textContent = wpActive ? 'PV + WP inkl. Einspeisung'     : 'PV + Einspeisung';
+
+  // DYN-YEARS
+  var dynSpans = document.querySelectorAll('.dyn-years');
+  for(var d=0;d<dynSpans.length;d++) dynSpans[d].textContent=YEARS;
+  document.getElementById('eyebrow_years').textContent=YEARS;
+  document.getElementById('sc_years_label').textContent=YEARS;
+
+  var FIN_YEARS=15;
+  var pvJahr=pv_monthly*12;
+  var feedJahr=feed_kwh*feed_rate;
+
+  // WP-ZUSATZBEDARF — wenn Wärmepumpe aktiv, zusätzlichen Strombedarf einrechnen
+  var wp_extra_kwh = 0;
+  var wp_extra_rate = 0;
+  if (wpActive) {
+    var cfg_wp      = heizartConfig[heizart];
+    var jaz         = parseFloat(document.getElementById('wp_jaz').value)||3.5;
+    var wp_verbrauch= parseFloat(document.getElementById('wp_verbrauch').value)||cfg_wp.defaultVerbrauch;
+    var wp_rate_b   = parseFloat(document.getElementById('wp_rate').value)||120;
+    var wp_ev_quote = (parseFloat(document.getElementById('wp_eigenverbrauch_quote').value)||40) / 100;
+    var wp_verbrauchKwh = cfg_wp.kwh_pro_einheit ? wp_verbrauch * cfg_wp.kwh_pro_einheit : wp_verbrauch;
+    var nutzwaerme_wp   = wp_verbrauchKwh * cfg_wp.wirkungsgrad;
+    var wp_strombedarf  = nutzwaerme_wp / jaz;
+    var pv_fuer_wp      = Math.min(wp_strombedarf * wp_ev_quote, Math.max(0, feed_kwh));
+    wp_extra_kwh        = wp_strombedarf - pv_fuer_wp;
+    wp_extra_rate       = wp_rate_b * (1 - foerderung/100);
+    // Einspeisung korrigieren: WP nutzt PV → weniger Einspeisung
+    feed_kwh  = Math.max(0, feed_kwh - pv_fuer_wp);
+    feedJahr  = feed_kwh * feed_rate;
+  }
+
+  // WP-Anzeigebanner aktualisieren
+  var wpBanner = document.getElementById('wp_active_banner');
+  if (wpBanner) {
+    wpBanner.style.display = wpActive ? 'flex' : 'none';
+    if (wpActive) {
+      document.getElementById('wp_banner_kwh').textContent  = Math.round(wp_extra_kwh).toLocaleString('de-DE');
+      document.getElementById('wp_banner_rate').textContent = fmtEur(wp_extra_rate);
+    }
+  }
+
+  // KUMULIERTE SUMMEN
+  var s1=0,s2=0,s3=0;
+  var s1_strom_only=0;
+  var WP_FIN_YEARS = 15;
+  var chartLabels=[],chartS1=[],chartS2=[],chartS3=[];
+
+  // Heizkosten kumuliert über YEARS (für Szenario 1 Anzeige)
+  var heizGesamt_s1 = 0, heizMonat_s1 = 0, heizBase_s1 = 0;
+  if (wpActive) {
+    var cfg_s1     = heizartConfig[heizart];
+    var wpInfl_s1  = parseFloat(document.getElementById('wp_inflation').value)||5;
+    var wpVerb_s1  = parseFloat(document.getElementById('wp_verbrauch').value)||cfg_s1.defaultVerbrauch;
+    var wpPreis_s1 = parseFloat(document.getElementById('wp_preis').value)||cfg_s1.defaultPreis;
+    var wpWart_s1  = parseFloat(document.getElementById('wp_wartung').value)||300;
+    heizBase_s1    = wpVerb_s1 * wpPreis_s1 + wpWart_s1;
+    heizMonat_s1   = heizBase_s1 / 12;
+    for (var yh2=0; yh2<YEARS; yh2++) heizGesamt_s1 += heizBase_s1 * Math.pow(1+wpInfl_s1/100, yh2);
+  }
+
+  for(var y=0;y<YEARS;y++){
+    var strom_s1 = stromJahr(consumption,price,base,inflation,y);
+    s1_strom_only += strom_s1;
+    var heiz_s1 = wpActive ? heizBase_s1 * Math.pow(1+(parseFloat(document.getElementById('wp_inflation').value)||5)/100, y) : 0;
+    s1 += strom_s1 + heiz_s1;
+
+    var rest=restJahr(rest_kwh,price,inflation,y);
+    var rate=(y<FIN_YEARS)?pvJahr:0;
+    var wp_rate_jahr   = wpActive ? ((y<WP_FIN_YEARS) ? wp_extra_rate*12 : 0) : 0;
+    var wp_reststrom_j = wpActive ? wp_extra_kwh * price * Math.pow(1+inflation/100,y) : 0;
+    s2+=rate+rest+wp_rate_jahr+wp_reststrom_j;
+    s3+=rate+rest-feedJahr+wp_rate_jahr+wp_reststrom_j;
+    chartLabels.push('J.'+(y+1));
+    chartS1.push(Math.round(s1));
+    chartS2.push(Math.round(s2));
+    chartS3.push(Math.round(s3));
+  }
+
+  var m0   = stromJahr(consumption,price,base,inflation,0)/12;
+  var m10  = stromJahr(consumption,price,base,inflation,Math.min(10,YEARS-1))/12;
+  var mEnd = stromJahr(consumption,price,base,inflation,YEARS-1)/12;
+  var rest0=restJahr(rest_kwh,price,inflation,0)/12;
+  var wp_m = wpActive ? (wp_extra_rate + wp_extra_kwh*price/12) : 0;
+  var m_s2 = pv_monthly+rest0+wp_m;
+  var m_s3 = pv_monthly+rest0-feedJahr/12+wp_m;
+
+  // SZENARIEN
+  // Szenario 1 Titel + Label dynamisch
+  if (wpActive) {
+    document.getElementById('s1_title').textContent     = 'Ohne PV + Ohne WP';
+    document.getElementById('s1_desc').textContent      = 'Strom aus dem Netz + bisherige Heizkosten — was der Kunde heute insgesamt zahlt';
+    document.getElementById('s1_main_label').innerHTML  = 'Strom + Heizung gesamt <span class="dyn-years">'+YEARS+'</span> J.';
+  } else {
+    document.getElementById('s1_title').textContent     = 'Ohne PV';
+    document.getElementById('s1_desc').textContent      = 'Vollständiger Netzbezug mit jährlicher Preissteigerung — keinerlei eigene Erzeugung';
+    document.getElementById('s1_main_label').innerHTML  = 'Gesamtkosten <span class="dyn-years">'+YEARS+'</span> J.';
+  }
+
+  document.getElementById('s1_total').textContent=fmtEur(s1);
+  document.getElementById('s1_avg').textContent='Ø '+fmtEur(s1/YEARS/12)+' / Monat';
+  document.getElementById('s1_m0').textContent=fmtEur(m0);
+  document.getElementById('s1_m10').textContent=fmtEur(m10);
+  document.getElementById('s1_label_mx').textContent='In '+YEARS+' J. / Monat';
+  document.getElementById('s1_mx').textContent=fmtEur(mEnd);
+
+  // Heizkosten-Zeilen in Szenario 1
+  if (wpActive) {
+    document.getElementById('s1_heiz_monat').textContent  = fmtEur(heizMonat_s1) + ' / Monat';
+    document.getElementById('s1_heiz_gesamt').textContent = fmtEur(heizGesamt_s1);
+  }
+  document.getElementById('s2_total').textContent=fmtEur(s2);
+  document.getElementById('s2_avg').textContent='Ø '+fmtEur(s2/YEARS/12)+' / Monat';
+  document.getElementById('s2_rate').textContent=fmtEur(pv_monthly)+' / Monat';
+  document.getElementById('s2_rest0').textContent=fmtEur(restJahr(rest_kwh,price,inflation,0))+' / J. · '+fmtEur(restJahr(rest_kwh,price,inflation,0)/12)+' / Monat';
+  document.getElementById('s2_ratetotal').textContent=fmtEur(pvJahr*FIN_YEARS);
+  document.getElementById('s3_total').textContent=fmtEur(s3);
+  document.getElementById('s3_avg').textContent='Ø '+fmtEur(s3/YEARS/12)+' / Monat (netto)';
+  document.getElementById('s3_rate').textContent=fmtEur(pv_monthly)+' / Monat';
+  document.getElementById('s3_rest0').textContent=fmtEur(restJahr(rest_kwh,price,inflation,0))+' / J. · '+fmtEur(restJahr(rest_kwh,price,inflation,0)/12)+' / Monat';
+  document.getElementById('s3_feed').textContent=fmtEur(feedJahr)+' / J. · '+fmtEur(feedJahr/12)+' / Monat';
+  document.getElementById('s3_mges').textContent=fmtEur(m_s3);
+
+  var feedYearsActual=Math.min(YEARS,20);
+  document.getElementById('diff1').textContent=fmtEur(s1-s2);
+  document.getElementById('diff2').textContent=fmtEur(feedJahr*feedYearsActual);
+  document.getElementById('diff3').textContent=fmtEur(s1-s3);
+
+  // WP-Diff-Box: einfach s1 (rot) minus s3 (grün) = echter Gesamtvorteil
+  if (wpActive) {
+    // Heizkosten-Ersparnis = Heizkosten gesamt minus WP-Kosten (bereits in s1 vs s3 enthalten)
+    // s1 = Strom + Heizkosten (ohne PV/WP)
+    // s3 = PV + WP-Rate + WP-Reststrom - Einspeisung
+    // Heizanteil der Ersparnis = heizGesamt_s1 (Heizkosten die wegfallen durch WP)
+    //   minus WP-Kosten die in s3 stecken
+    var wpRateGes = 0;
+    for (var yw=0; yw<YEARS; yw++) wpRateGes += (yw<15 ? wp_extra_rate*12 : 0) + wp_extra_kwh*price*Math.pow(1+inflation/100,yw);
+    var heizNetto   = heizGesamt_s1 - wpRateGes;
+    var gesamtVorteil = s1 - s3;  // Das ist die einzige richtige Zahl: rot minus grün
+
+    document.getElementById('diff_heiz_box').style.display   = '';
+    document.getElementById('diff_gesamt_box').style.display = '';
+    document.getElementById('diff1_box').style.display = 'none';
+    document.getElementById('diff2_box').style.display = 'none';
+    document.getElementById('diff3_box').style.display = 'none';
+    document.getElementById('diff_heiz').textContent    = fmtEur(heizNetto);
+    document.getElementById('diff_gesamt').textContent  = fmtEur(gesamtVorteil);
+    document.getElementById('main_diff_box').style.gridTemplateColumns = '1fr 1fr';
+
+    // Szenario 1: Heizkosten anzeigen
+    document.getElementById('s1_heiz_monat').textContent  = fmtEur(heizMonat_s1) + ' / Monat';
+    document.getElementById('s1_heiz_gesamt').textContent = fmtEur(heizGesamt_s1);
+
+    // kontext_vorteil = rot minus grün
+    var vorteil = s1 - s3;
+    document.getElementById('kontext_vorteil').textContent = fmtEur(vorteil);
+    document.getElementById('k_urlaub').textContent  = fmtN(vorteil/1500);
+    document.getElementById('k_auto').textContent    = fmtN(vorteil/30000)+'×';
+    document.getElementById('k_tank').textContent    = fmtN(vorteil/80);
+    document.getElementById('k_einkauf').textContent = fmtN(vorteil/150);
+    document.getElementById('k_kaffee').textContent  = fmtN(vorteil/5);
+    document.getElementById('k_pizza').textContent   = fmtN(vorteil/40);
+  } else {
+    document.getElementById('diff_heiz_box').style.display   = 'none';
+    document.getElementById('diff_gesamt_box').style.display = 'none';
+    document.getElementById('diff1_box').style.display = '';
+    document.getElementById('diff2_box').style.display = '';
+    document.getElementById('diff3_box').style.display = '';
+    document.getElementById('main_diff_box').style.gridTemplateColumns = '1fr 1fr 1fr';
+    document.getElementById('diff1_label').textContent = 'PV-Vorteil (ohne Einspeisung)';
+    document.getElementById('diff1_sub').textContent   = 'Ersparnis vs. kein PV über '+YEARS+' J.';
+    document.getElementById('diff3_label').textContent = 'Gesamtvorteil mit Einspeisung';
+    document.getElementById('diff3_sub').textContent   = 'vs. kein PV über '+YEARS+' Jahre';
+  }
+
+  // BALKEN + BREAK-EVEN VARIABLEN — alles hier berechnen
+  var m_pv_rate = pv_monthly;
+  var m_wp_rate = wpActive ? wp_extra_rate : 0;
+  var m_wp_rest_be = wpActive ? (wp_extra_kwh * price / 12) : 0;
+  var m_alt_heiz_bar = 0;
+  if (wpActive) {
+    var preis_b = parseFloat(document.getElementById('wp_preis').value)||0.12;
+    var verb_b  = parseFloat(document.getElementById('wp_verbrauch').value)||20000;
+    var wart_b  = parseFloat(document.getElementById('wp_wartung').value)||300;
+    m_alt_heiz_bar = (verb_b * preis_b + wart_b) / 12;
+  }
+  var m_rest  = restJahr(rest_kwh, price, inflation, 0) / 12;
+  var m_einsp = feedJahr / 12;
+  var m_neu_bar = m_pv_rate + m_wp_rate + m_rest + m_wp_rest_be - m_einsp;
+
+  // BALKEN — korrekte Werte
+  var bar1_val = stromJahr(consumption,price,base,inflation,0)/12 + m_alt_heiz_bar;
+  var bar2_val = stromJahr(consumption,price,base,inflation,YEARS-1)/12 + m_alt_heiz_bar;
+  var bar3_val = m_pv_rate + m_wp_rate + m_rest + m_wp_rest_be;
+  var bar4_val = m_pv_rate + m_wp_rate + m_rest + m_wp_rest_be - m_einsp;
+
+  var maxBar = Math.max(bar1_val, bar2_val) * 1.05;
+  function pct(v){ return Math.min(100, Math.max(2, (v/maxBar)*100)).toFixed(1)+'%'; }
+
+  document.getElementById('bl1').textContent=fmtEur(bar1_val); document.getElementById('bb1').style.width=pct(bar1_val);
+  document.getElementById('bl2').textContent=fmtEur(bar2_val); document.getElementById('bb2').style.width=pct(bar2_val);
+  document.getElementById('bl3').textContent=fmtEur(bar3_val); document.getElementById('bb3').style.width=pct(bar3_val);
+  document.getElementById('bl4').textContent=fmtEur(bar4_val); document.getElementById('bb4').style.width=pct(bar4_val);
+  document.querySelector('#bar2_label .name').textContent = (wpActive?'🔌🔥 Strom + Heizung':'🔌 Strom ohne PV') + ' — in '+YEARS+' Jahren';
+  document.getElementById('bar1_name').textContent = wpActive ? '🔌🔥 Strom + Heizung — heute' : '🔌 Strom ohne PV — heute';
+  document.getElementById('bar3_name').textContent = wpActive ? '⚡🔥 PV + WP ohne Einspeisung' : '⚡ PV-Rate + Reststrom (ohne Einspeisung)';
+  document.getElementById('bar4_name').textContent = wpActive ? '☀️🔥 PV + WP inkl. Einspeisung' : '☀️ PV-Nettorate nach Einspeisevergütung';
+
+  // AMORTISATION
+  var be_alt = bar1_val; // Strom (+ Heizung) heute
+  var be_neu = m_neu_bar; // PV + WP + Rest - Einsp
+  var breakEvenMonat = 0;
+  var breakEvenStr;
+
+  if (be_alt >= be_neu) {
+    breakEvenMonat = 1;
+  } else {
+    var wpInfl_be = wpActive ? (parseFloat(document.getElementById('wp_inflation').value)||5) : 0;
+    for (var mo = 0; mo < 360; mo++) {
+      var be_jahr   = Math.floor(mo / 12);
+      var be_strom  = stromJahr(consumption, price, base, inflation, be_jahr) / 12;
+      var be_heiz   = wpActive ? m_alt_heiz_bar * Math.pow(1 + wpInfl_be/100, be_jahr) : 0;
+      if ((be_strom + be_heiz) >= be_neu) { breakEvenMonat = mo + 1; break; }
+    }
+  }
+
+  if (breakEvenMonat === 1) {
+    breakEvenStr = 'Monat 1';
+  } else if (breakEvenMonat > 1) {
+    var bej = breakEvenMonat / 12;
+    breakEvenStr = bej < 1
+      ? 'Monat ' + breakEvenMonat
+      : (bej % 1 === 0 ? bej.toFixed(0) : bej.toFixed(1)).replace('.', ',') + ' J.';
+  } else {
+    breakEvenStr = 'Nie (0% Inflation)';
+  }
+
+  var monatErsparnis = be_alt - be_neu;
+  var amortPct = breakEvenMonat > 0 ? Math.min(100, (breakEvenMonat / 180) * 100) : 100;
+
+  // Break-Even Labels + Aufschlüsselung
+  var ohneLabel = wpActive ? 'Strom + Heizung heute' : 'Strom ohne PV';
+  var mitLabel  = wpActive ? 'PV + WP (netto)'       : 'Mit PV (netto)';
+  document.getElementById('amort_ohne_label').textContent = wpActive ? 'Strom + Heizung heute' : 'Strom ohne PV';
+  document.getElementById('amort_mit_label').textContent  = wpActive ? 'PV + WP (netto)'       : 'Mit PV (netto)';
+  document.getElementById('amort_ohne').textContent = fmtEur(be_alt);
+  document.getElementById('amort_mit').textContent  = fmtEur(be_neu);
+  document.getElementById('amort_breakeven').textContent = breakEvenStr;
+
+  // Aufschlüsselung ein-/ausblenden
+  document.getElementById('amort_ohne_detail').style.display = wpActive ? 'block' : 'none';
+  document.getElementById('amort_mit_detail').style.display  = wpActive ? 'block' : 'none';
+  if (wpActive) {
+    document.getElementById('amort_d_strom').textContent = fmtEur(stromJahr(consumption,price,base,inflation,0)/12) + '/Monat';
+    document.getElementById('amort_d_heiz').textContent  = fmtEur(m_alt_heiz_bar)  + '/Monat';
+    document.getElementById('amort_d_pv').textContent    = fmtEur(m_pv_rate)   + '/Monat';
+    document.getElementById('amort_d_wp').textContent    = fmtEur(m_wp_rate)   + '/Monat';
+    document.getElementById('amort_d_rest').textContent  = fmtEur(m_rest + m_wp_rest_be) + '/Monat';
+    document.getElementById('amort_d_einsp').textContent = '− ' + fmtEur(m_einsp) + '/Monat';
+  }
+
+  var altBez = wpActive ? 'Strom + Heizung' : 'Strompreis';
+  var neuBez = wpActive ? 'PV + WP-Rate' : 'PV-Rate';
+  document.getElementById('amort_title').textContent = breakEvenMonat === 1
+    ? (wpActive ? 'PV + WP ist ab Monat 1 günstiger als Strom + Heizung' : 'PV ist ab Monat 1 günstiger als der Stromversorger')
+    : breakEvenMonat > 1
+      ? altBez + ' überholt ' + neuBez + ' nach ' + breakEvenStr
+      : altBez + ' überholt ' + neuBez + ' nicht (Inflation zu niedrig)';
+  document.getElementById('amort_desc').textContent = breakEvenMonat === 1
+    ? 'Die neue Monatslast von ' + fmtEur(be_neu) + '/Monat liegt bereits unter dem bisherigen Abschlag von ' + fmtEur(be_alt) + '/Monat — der Kunde spart sofort.'
+    : breakEvenMonat > 1
+      ? 'Heute zahlt der Kunde ' + fmtEur(be_alt) + '/Monat (' + (wpActive?'Strom + Heizung':'Strom') + ') — die neue Rate beträgt ' + fmtEur(be_neu) + '/Monat. Das Verhältnis kippt nach ' + breakEvenStr + '.'
+      : 'Bei 0% Preissteigerung überholen die alten Kosten die neue Rate nie. Setze eine realistische Preissteigerung ein.';
+  document.getElementById('amort_mid').textContent = breakEvenMonat === 1
+    ? '→ Sofort günstiger: ' + fmtEur(monatErsparnis) + ' / Monat Ersparnis'
+    : breakEvenMonat > 1
+      ? '→ Ab ' + breakEvenStr + ': alte Kosten teurer als neue Rate'
+      : '→ Preissteigerung auf > 0% setzen';
+  drawGauge(amortPct);
+  function drawGauge(pct, canvasId) {
+    var canvas = document.getElementById(canvasId || 'gaugeCanvas');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    var W = canvas.width, H = canvas.height;
+    var cx = W / 2, cy = H - 10;
+    var r = 90;
+    ctx.clearRect(0, 0, W, H);
+
+    var startAngle = Math.PI;
+    var endAngle   = 2 * Math.PI;
+    var fillAngle  = startAngle + (pct / 100) * Math.PI;
+
+    // Hintergrund-Bogen
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, startAngle, endAngle);
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 18;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    // Farbverlauf-Bogen (rot → gelb → grün)
+    if (pct > 0) {
+      var grad = ctx.createLinearGradient(cx - r, cy, cx + r, cy);
+      grad.addColorStop(0,   '#1D8349');
+      grad.addColorStop(0.5, '#f59e0b');
+      grad.addColorStop(1,   '#C0392B');
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, startAngle, fillAngle);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 18;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+
+      // Nadel-Punkt
+      var needleAngle = fillAngle;
+      var nx = cx + (r) * Math.cos(needleAngle);
+      var ny = cy + (r) * Math.sin(needleAngle);
+      ctx.beginPath();
+      ctx.arc(nx, ny, 8, 0, 2 * Math.PI);
+      ctx.fillStyle = '#fff';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(nx, ny, 5, 0, 2 * Math.PI);
+      ctx.fillStyle = pct <= 10 ? '#1D8349' : pct <= 50 ? '#f59e0b' : '#C0392B';
+      ctx.fill();
+    }
+
+    // Beschriftungen
+    ctx.font = '600 10px DM Sans';
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.textAlign = 'left';
+    ctx.fillText('Sofort', cx - r - 8, cy + 22);
+    ctx.textAlign = 'right';
+    ctx.fillText('15 J.', cx + r + 8, cy + 22);
+  }
+
+  // CHART
+  var ctx=document.getElementById('myChart').getContext('2d');
+  if(chartInstance) chartInstance.destroy();
+  chartInstance=new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:chartLabels,
+      datasets:[
+        {label: wpActive?'Strom + Heizung (ohne PV/WP)':'Ohne PV', data:chartS1,borderColor:'#C0392B',backgroundColor:'rgba(192,57,43,0.08)',borderWidth:2,pointRadius:0,tension:0.3,fill:true},
+        {label: wpActive?'PV + WP ohne Einspeisung':'PV o. Einspeisung', data:chartS2,borderColor:'#2471A3',backgroundColor:'rgba(36,113,163,0.06)',borderWidth:2,pointRadius:0,tension:0.3,fill:true},
+        {label: wpActive?'PV + WP inkl. Einspeisung':'PV + Einspeisung', data:chartS3,borderColor:'#1D8349',backgroundColor:'rgba(29,131,73,0.08)',borderWidth:2,pointRadius:0,tension:0.3,fill:true}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{labels:{color:'#8B95A8',font:{family:'DM Sans',size:12}}},
+        tooltip:{
+          backgroundColor:'#1A1D2A',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,
+          titleColor:'#EDF2F7',bodyColor:'#8B95A8',
+          callbacks:{label:function(ctx){return ctx.dataset.label+': '+fmtEur(ctx.parsed.y);}}
+        }
+      },
+      scales:{
+        x:{ticks:{color:'#5A6072',maxTicksLimit:8,font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'}},
+        y:{ticks:{color:'#5A6072',callback:function(v){return fmtEur(v);},font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'}}
+      }
+    }
+  });
+
+  // KONTEXT — nur wenn WP nicht aktiv (sonst oben schon gesetzt)
+  var vorteil=s1-s3;
+  document.getElementById('kontext_suffix').textContent = wpActive ? '(Strom + Heizung gespart)' : '';
+  if (!wpActive) {
+    document.getElementById('kontext_vorteil').textContent=fmtEur(vorteil);
+    document.getElementById('k_urlaub').textContent=fmtN(vorteil/1500);
+    document.getElementById('k_auto').textContent=fmtN(vorteil/30000)+'×';
+    document.getElementById('k_tank').textContent=fmtN(vorteil/80);
+    document.getElementById('k_einkauf').textContent=fmtN(vorteil/150);
+    document.getElementById('k_kaffee').textContent=fmtN(vorteil/5);
+    document.getElementById('k_pizza').textContent=fmtN(vorteil/40);
+  }
+
+  // WP-Zeilen in Szenario 2+3 ein-/ausblenden + Titel
+  document.getElementById('s2_title').textContent = wpActive ? 'PV + WP ohne Einspeisung' : 'PV ohne Einspeisung';
+  document.getElementById('s3_title').textContent = wpActive ? 'PV + WP inkl. Einspeisung'     : 'PV + Einspeisung';
+  var wpRows = document.querySelectorAll('.sc-row-wp');
+  for (var wr=0; wr<wpRows.length; wr++) {
+    wpRows[wr].style.display = wpActive ? 'flex' : 'none';
+  }
+  if (wpActive) {
+    document.getElementById('s2_wp_rate').textContent = fmtEur(wp_extra_rate) + ' / Monat (J. 1–15)';
+    document.getElementById('s2_wp_rest').textContent = fmtEur(wp_extra_kwh * price) + ' / J.';
+    document.getElementById('s3_wp_rate').textContent = fmtEur(wp_extra_rate) + ' / Monat (J. 1–15)';
+    document.getElementById('s3_wp_rest').textContent = fmtEur(wp_extra_kwh * price) + ' / J.';
+  }
+
+  // JAHRESVERLAUF — vertikale Karten
+  var milestones=[];
+  if(YEARS>=1)milestones.push(1);
+  if(YEARS>=5)milestones.push(5);
+  if(YEARS>=10)milestones.push(10);
+  if(YEARS>=15)milestones.push(15);
+  if(YEARS>=20)milestones.push(20);
+  if(YEARS>=25)milestones.push(25);
+  if(YEARS>=30)milestones.push(30);
+  if(milestones.indexOf(YEARS)===-1)milestones.push(YEARS);
+  milestones.sort(function(a,b){return a-b;});
+
+  var cum1=0,cum2=0,cum3=0;
+  var snaps=[];
+  for(var y2=0;y2<YEARS;y2++){
+    var yS1    = stromJahr(consumption,price,base,inflation,y2);
+    var yHeiz  = wpActive ? heizBase_s1 * Math.pow(1+(parseFloat(document.getElementById('wp_inflation').value)||5)/100, y2) : 0;
+    var yRest  = restJahr(rest_kwh,price,inflation,y2);
+    var yRate  = (y2<FIN_YEARS)?pvJahr:0;
+    var yWPrate = wpActive ? ((y2<WP_FIN_YEARS) ? wp_extra_rate*12 : 0) : 0;
+    var yWPrest = wpActive ? wp_extra_kwh * price * Math.pow(1+inflation/100,y2) : 0;
+    cum1 += yS1 + yHeiz;
+    cum2 += yRate + yRest + yWPrate + yWPrest;
+    cum3 += yRate + yRest - feedJahr + yWPrate + yWPrest;
+    if(milestones.indexOf(y2+1)!==-1){
+      snaps.push({yr:y2+1,c1:cum1,c2:cum2,c3:cum3,
+        isTotal:(y2+1===YEARS),isTurning:(y2+1===FIN_YEARS)});
+    }
+  }
+
+  var maxV = snaps.length ? snaps[snaps.length-1].c1 : 1;
+  var rows='';
+
+  for(var si=0;si<snaps.length;si++){
+    var sn=snaps[si];
+    var p1=(sn.c1/maxV*100).toFixed(1);
+    var p2=(sn.c2/maxV*100).toFixed(1);
+    var p3=(sn.c3/maxV*100).toFixed(1);
+    var m1=fmtEur(sn.c1/(sn.yr*12));   // ø Monat ohne PV
+    var m2=fmtEur(sn.c2/(sn.yr*12));   // ø Monat PV o. Einsp.
+    var m3=fmtEur(sn.c3/(sn.yr*12));   // ø Monat PV + Einsp.
+    var itemCls='tl-item'+(sn.isTotal?' tl-grand':sn.isTurning?' tl-turn':'');
+    var yrLbl=sn.isTotal?'Gesamt '+sn.yr+' Jahre':'Jahr '+sn.yr;
+    var badge=sn.isTurning?'<span class="tl-turn-badge">✓ Rate abbezahlt</span>':'';
+
+    rows+=
+      '<div class="'+itemCls+'">'+
+        '<div class="tl-yr-label">'+yrLbl+' '+badge+'</div>'+
+        '<div class="tl-vals-wrap">'+
+          '<div class="tl-vrow">'+
+            '<div class="tl-dot" style="background:#C0392B"></div>'+
+            '<div class="tl-vname">'+(wpActive?'Strom + Heizung':'Ohne PV')+'</div>'+
+            '<div class="tl-vbar-wrap"><div class="tl-vbar-track"><div class="tl-vbar-fill" style="width:'+p1+'%;background:linear-gradient(90deg,#C0392B,#E74C3C)"></div></div></div>'+
+            '<div class="tl-vamt-wrap"><div class="tl-vamt c-red">'+fmtEur(sn.c1)+'</div><div class="tl-vamt-sub">ø '+m1+' / Monat</div></div>'+
+          '</div>'+
+          '<div class="tl-vrow">'+
+            '<div class="tl-dot" style="background:#2471A3"></div>'+
+            '<div class="tl-vname">'+(wpActive?'PV + WP o. Einspeisung':'PV o. Einspeisung')+'</div>'+
+            '<div class="tl-vbar-wrap"><div class="tl-vbar-track"><div class="tl-vbar-fill" style="width:'+p2+'%;background:linear-gradient(90deg,#2471A3,#3498DB)"></div></div></div>'+
+            '<div class="tl-vamt-wrap"><div class="tl-vamt c-blue">'+fmtEur(sn.c2)+'</div><div class="tl-vamt-sub">ø '+m2+' / Monat</div></div>'+
+          '</div>'+
+          '<div class="tl-vrow">'+
+            '<div class="tl-dot" style="background:#1D8349"></div>'+
+            '<div class="tl-vname">'+(wpActive?'PV + WP + Einspeisung':'PV + Einspeisung')+'</div>'+
+            '<div class="tl-vbar-wrap"><div class="tl-vbar-track"><div class="tl-vbar-fill" style="width:'+p3+'%;background:linear-gradient(90deg,#1D8349,#27AE60)"></div></div></div>'+
+            '<div class="tl-vamt-wrap"><div class="tl-vamt c-grn">'+fmtEur(sn.c3)+'</div><div class="tl-vamt-sub">ø '+m3+' / Monat</div></div>'+
+          '</div>'+
+          '<div class="tl-adv-row">'+
+            '<div class="tl-adv-label">'+(wpActive?'Vorteil PV + WP + Einspeisung':'Vorteil mit PV + Einspeisung')+'</div>'+
+            '<div class="tl-adv-val">+ '+fmtEur(sn.c1-sn.c3)+'</div>'+
+          '</div>'+
+        '</div>'+
+      '</div>';
+  }
+  document.getElementById('tbl').innerHTML=rows;
+
+  // BÖRSENSTROM
+  var rest_normal_m = restJahr(rest_kwh,price,inflation,0)/12;
+  var rest_boerse_m = (rest_kwh*boerse_price)/12;
+  // WP-Reststrom: normal und Börse
+  var wp_rest_normal_m = wpActive ? (wp_extra_kwh * price / 12) : 0;
+  var wp_rest_boerse_m = wpActive ? (wp_extra_kwh * boerse_price / 12) : 0;
+  var wp_m_normal  = wpActive ? (wp_extra_rate + wp_rest_normal_m) : 0;
+  var wp_m_boerse2 = wpActive ? (wp_extra_rate + wp_rest_boerse_m) : 0;
+  var pv_normal_m  = pv_monthly + rest_normal_m - feedJahr/12 + wp_m_normal;
+  var pv_normal_m16= rest_normal_m + (wpActive ? wp_rest_normal_m : 0);
+  var pv_boerse_m  = pv_monthly + rest_boerse_m - feedJahr/12 + wp_m_boerse2;
+  var pv_boerse_m16= rest_boerse_m + (wpActive ? wp_rest_boerse_m : 0);
+  var b_pv_boerse=0;
+  for(var yb=0;yb<YEARS;yb++){
+    var bRate   = (yb<FIN_YEARS)?pvJahr:0;
+    var bWPrate = wpActive ? ((yb<WP_FIN_YEARS) ? wp_extra_rate*12 : 0) : 0;
+    var bWPrest = wpActive ? wp_extra_kwh * boerse_price : 0; // WP-Rest zu Börse
+    b_pv_boerse += bRate + rest_kwh*boerse_price - feedJahr + bWPrate + bWPrest;
+  }
+  // Reststrom-Anzeige: Haushalt + WP zusammen
+  var rest_kwh_ges = rest_kwh + (wpActive ? Math.round(wp_extra_kwh) : 0);
+  document.getElementById('cmp_rest_kwh1').textContent=rest_kwh_ges.toLocaleString('de-DE');
+  document.getElementById('cmp_price1').textContent=price.toLocaleString('de-DE',{minimumFractionDigits:2});
+  document.getElementById('cmp_pv_normal_m').textContent=fmtEur(pv_normal_m);
+  document.getElementById('cmp_pv_normal_m16_sub').textContent='ab J. 16: '+fmtEur(pv_normal_m16);
+  document.getElementById('cmp_pv_normal_m16').textContent=fmtEur(pv_normal_m16);
+  document.getElementById('cmp_pv_normal_total').textContent=fmtEur(s3);
+  document.getElementById('cmp_rest_kwh2').textContent=rest_kwh_ges.toLocaleString('de-DE');
+  document.getElementById('cmp_boerse_price').textContent=boerse_price.toLocaleString('de-DE',{minimumFractionDigits:2});
+  document.getElementById('cmp_pv_boerse_m').textContent=fmtEur(pv_boerse_m);
+  document.getElementById('cmp_pv_boerse_m16_sub').textContent='ab J. 16: '+fmtEur(pv_boerse_m16);
+  document.getElementById('cmp_pv_boerse_m16').textContent=fmtEur(pv_boerse_m16);
+  document.getElementById('cmp_pv_boerse_total').textContent=fmtEur(b_pv_boerse);
+  document.getElementById('cmp_diff_m').textContent=fmtEur(pv_normal_m-pv_boerse_m);
+  document.getElementById('cmp_diff_m16_sub').textContent='ab J. 16: '+fmtEur(pv_normal_m16-pv_boerse_m16);
+  document.getElementById('cmp_diff_m16').textContent=fmtEur(pv_normal_m16-pv_boerse_m16);
+  document.getElementById('cmp_diff_total').textContent=fmtEur(s3-b_pv_boerse);
+  document.getElementById('hint_rest_kwh').textContent=rest_kwh_ges.toLocaleString('de-DE');
+
+  // BREAK-EVEN BÖRSENSTROM — wann Strompreis (+Heizung) >= fixer PV+WP+Börse-Nettorate
+  var m0_boerse = (consumption * price + base * 12) / 12 + (wpActive ? heizMonat_s1 : 0);
+  var monatErsparnis2 = m0_boerse - pv_boerse_m;
+
+  var breakEvenMonat2 = 0;
+  if (m0_boerse >= pv_boerse_m) {
+    breakEvenMonat2 = 1;
+  } else {
+    for (var mo2 = 0; mo2 < 360; mo2++) {
+      var j2 = Math.floor(mo2 / 12);
+      if (stromJahr(consumption, price, base, inflation, j2) / 12 >= pv_boerse_m) {
+        breakEvenMonat2 = mo2 + 1; break;
+      }
+    }
+  }
+  var breakEvenStr2;
+  if (breakEvenMonat2 === 1) {
+    breakEvenStr2 = 'Monat 1';
+  } else if (breakEvenMonat2 > 1) {
+    var bej2 = breakEvenMonat2 / 12;
+    breakEvenStr2 = bej2 < 1
+      ? 'Monat ' + breakEvenMonat2
+      : (bej2 % 1 === 0 ? bej2.toFixed(0) : bej2.toFixed(1)).replace('.', ',') + ' J.';
+  } else {
+    breakEvenStr2 = 'Nie (0% Inflation)';
+  }
+  var amortPct2 = breakEvenMonat2 > 0 ? Math.min(100, (breakEvenMonat2 / 180) * 100) : 2;
+
+  document.getElementById('amort2_breakeven').textContent = breakEvenStr2;
+  document.getElementById('amort2_ohne_label').textContent = wpActive ? 'Strom + Heizung heute' : 'Strom ohne PV';
+  document.getElementById('amort2_mit_label').textContent  = wpActive ? 'PV + WP + Börsenstrom' : 'PV + Börsenstrom';
+  document.getElementById('amort2_ohne').textContent      = fmtEur(m0_boerse);
+  document.getElementById('amort2_mit').textContent       = fmtEur(pv_boerse_m);
+  document.getElementById('amort2_title').textContent     = monatErsparnis2 >= 0
+    ? (wpActive ? 'PV + WP + Börsenstrom günstiger ab Monat 1' : 'Günstiger ab dem ersten Monat — mit Börsenstrom')
+    : 'Break-Even nach ' + breakEvenStr2 + ' — mit Börsenstrom';
+  document.getElementById('amort2_desc').textContent      = monatErsparnis2 >= 0
+    ? (wpActive ? 'Mit PV + WP + Börsenstrom zahlt der Kunde sofort ' + fmtEur(monatErsparnis2) + ' weniger pro Monat als mit Strom + Heizung.'
+                : 'Mit Börsenstromtarif und PV-Anlage zahlt der Kunde sofort ' + fmtEur(monatErsparnis2) + ' weniger pro Monat als mit normalem Stromtarif ohne PV.')
+    : 'Durch den günstigeren Börsenstrompreis für den Reststromzukauf verschiebt sich der Break-Even gegenüber dem Normaltarif.';
+  document.getElementById('amort2_pill').textContent      = monatErsparnis2 >= 0
+    ? '+ ' + fmtEur(monatErsparnis2) + ' Ersparnis ab Monat 1 mit Börsenstrom'
+    : 'Break-Even: Monat ' + breakEvenMonat2;
+  drawGauge(amortPct2, 'gaugeCanvas2');
+
+  // Wenn WP aktiv: Break-Even mit aktuellen globalen WP-Werten neu zeichnen
+  if (wpActive && g_heiz_monat > 0) {
+    updateBreakEven(g_heiz_monat, g_wp_extra_rate, g_wp_extra_kwh, feedJahr);
+  }
+  updatePsycho(s1, s3, bar1_val, bar4_val, YEARS);
+}
+
+var inputs=document.querySelectorAll('input:not(#customer_name):not(#wp_verbrauch):not(#wp_preis):not(#wp_wartung):not(#wp_rate):not(#wp_jaz):not(#wp_invest):not(#wp_inflation):not(#wp_eigenverbrauch_quote)');
+for(var i=0;i<inputs.length;i++) inputs[i].addEventListener('input',update);
+update();
+
+
+var _toggleId = 0;
+
+function toggleWP() {
+  wpActive = !wpActive;
+  document.querySelector('.wp-toggle-bar').classList.toggle('active', wpActive);
+  document.getElementById('wp_switch').classList.toggle('on', wpActive);
+  document.getElementById('wp_inputs').classList.toggle('visible', wpActive);
+  if (!wpActive) { g_heiz_monat = 0; g_wp_extra_rate = 0; g_wp_extra_kwh = 0; }
+  update();
+  if (wpActive) { updateWP(); update(); }
+}
+
+function setHeizart(art) {
+  heizart = art;
+  document.querySelectorAll('.wp-heizart-btn').forEach(function(b){ b.classList.remove('active'); });
+  document.getElementById('btn_' + art).classList.add('active');
+  var cfg = heizartConfig[art];
+  // Labels anpassen
+  document.getElementById('wp_verbrauch_label').textContent = cfg.verbrauchLabel;
+  document.getElementById('wp_verbrauch_unit').textContent  = cfg.verbrauchUnit;
+  document.getElementById('wp_preis_label').textContent     = cfg.preisLabel;
+  document.getElementById('wp_preis_unit').textContent      = cfg.preisUnit;
+  // Standardwerte setzen
+  document.getElementById('wp_verbrauch').value = cfg.defaultVerbrauch;
+  document.getElementById('wp_preis').value     = cfg.defaultPreis;
+  updateWP();
+}
+
+function setFoerderung(pct) {
+  foerderung = pct;
+  ['f0','f30','f50','f70'].forEach(function(id){ document.getElementById('btn_'+id).classList.remove('active'); });
+  document.getElementById('btn_f' + pct).classList.add('active');
+  updateWP();
+}
+
+function updateWP() {
+  if (!wpActive) return;
+
+
+  var cfg         = heizartConfig[heizart];
+  var YEARS       = parseInt(document.getElementById('years').value) || 20;
+  var wpInfl      = parseFloat(document.getElementById('wp_inflation').value) || 5;
+  var price       = parseFloat(document.getElementById('price').value) || 0.34;
+  var consumption_wp = parseFloat(document.getElementById('consumption').value) || 7000;
+  var pv_prod_wp     = parseFloat(document.getElementById('pv_production').value) || 9000;
+  var eigenverbrauch_kwh = calcEVHaushalt(pv_prod_wp, consumption_wp);
+
+  var verbrauch   = parseFloat(document.getElementById('wp_verbrauch').value) || cfg.defaultVerbrauch;
+  var preisEinheit= parseFloat(document.getElementById('wp_preis').value)     || cfg.defaultPreis;
+  var wartung     = parseFloat(document.getElementById('wp_wartung').value)   || 300;
+  var wpInvest    = parseFloat(document.getElementById('wp_invest').value)    || 15000;
+  var wpRateBrutto= parseFloat(document.getElementById('wp_rate').value)      || 120;
+  var jaz         = parseFloat(document.getElementById('wp_jaz').value)       || 3.5;
+  var WP_YEARS    = 15;
+
+  // kWh-Verbrauch berechnen (Öl/Pellets haben Umrechnungsfaktor)
+  var verbrauchKwh = cfg.kwh_pro_einheit ? verbrauch * cfg.kwh_pro_einheit : verbrauch;
+
+  // Brennstoffkosten
+  var brennstoffJahr = verbrauch * preisEinheit;
+  var heizkosten     = brennstoffJahr + wartung;
+  var heizkostenMonat= heizkosten / 12;
+
+  // Nutzwärme (was die WP liefern muss)
+  var nutzwaerme  = verbrauchKwh * cfg.wirkungsgrad;
+
+  // WP-Strombedarf = Nutzwärme ÷ JAZ
+  var wpStromBedarf = nutzwaerme / jaz;
+
+  // PV-Eigenverbrauch Quote aus Slider — aber max. verfügbarer PV-Überschuss nach Haushalt
+  var wp_ev_q  = (parseFloat(document.getElementById('wp_eigenverbrauch_quote').value)||40) / 100;
+  var pv_feed_verfuegbar = Math.max(0, pv_prod_wp - eigenverbrauch_kwh);
+  var pvAnteil = Math.min(wpStromBedarf * wp_ev_q, pv_feed_verfuegbar);
+  var restStromWP  = wpStromBedarf - pvAnteil;
+  var restStromKosten = restStromWP * price;
+
+  // Info-Boxen befüllen
+  document.getElementById('wp_calc_monat').textContent         = fmtEur(heizkostenMonat);
+  document.getElementById('wp_calc_jahr').textContent          = fmtEur(heizkosten);
+  document.getElementById('wp_calc_nutz').textContent          = Math.round(nutzwaerme).toLocaleString('de-DE');
+  document.getElementById('wp_wirkungsgrad_label').textContent = Math.round(cfg.wirkungsgrad * 100);
+  document.getElementById('wp_calc_strom').textContent         = Math.round(wpStromBedarf).toLocaleString('de-DE');
+  document.getElementById('wp_calc_pv_anteil').textContent     = Math.round(pvAnteil).toLocaleString('de-DE');
+  document.getElementById('wp_calc_reststrom').textContent     = Math.round(restStromWP).toLocaleString('de-DE');
+  document.getElementById('wp_strompreis_label').textContent   = price.toLocaleString('de-DE', {minimumFractionDigits:2});
+
+  // Förderung
+  var foerderEur    = wpInvest * foerderung / 100;
+  var wpInvestNetto = wpInvest - foerderEur;
+  var wpRateNetto   = wpRateBrutto * (1 - foerderung/100);
+
+  document.getElementById('wp_foerder_eur').textContent  = fmtEur(foerderEur);
+  document.getElementById('wp_foerder_pct').textContent  = foerderung + ' % von ' + fmtEur(wpInvest);
+  document.getElementById('wp_netto_invest').textContent = fmtEur(wpInvestNetto);
+  document.getElementById('wp_rate_netto').textContent   = fmtEur(wpRateNetto);
+
+  // Kumulierte Heizkosten alt (mit Preissteigerung)
+  var altGesamt = 0, altJahr_end = 0;
+  for (var y=0; y<YEARS; y++) {
+    var hk = heizkosten * Math.pow(1 + wpInfl/100, y);
+    altGesamt += hk;
+    if (y === YEARS-1) altJahr_end = hk;
+  }
+
+  // Kumulierte WP-Kosten über Betrachtungszeitraum: Rate 15 J. + Reststrom WP
+  var pvWpGesamt = 0;
+  for (var y2=0; y2<YEARS; y2++) {
+    var rate      = (y2 < WP_YEARS) ? wpRateNetto * 12 : 0;
+    var stromKost = restStromKosten * Math.pow(1 + wpInfl/100, y2);
+    pvWpGesamt   += rate + stromKost;
+  }
+
+  // Kumulierte Stromkosten OHNE PV (Haushalt, mit Inflation) über Betrachtungszeitraum
+  var price_main     = parseFloat(document.getElementById('price').value)||0.34;
+  var inflation_main = parseFloat(document.getElementById('inflation').value)||3.5;
+  var consumption    = parseFloat(document.getElementById('consumption').value)||7000;
+  var base_main      = parseFloat(document.getElementById('base').value)||12;
+  var stromOhnePV    = 0;
+  for (var y3=0; y3<YEARS; y3++) {
+    stromOhnePV += consumption * price_main * Math.pow(1+inflation_main/100, y3) + base_main*12;
+  }
+
+  // Kumulierte Stromkosten MIT PV + WP (aus update()-Logik, vereinfacht)
+  var pv_monthly_val = parseFloat(document.getElementById('pv_monthly').value)||186;
+  var feed_rate_val  = parseFloat(document.getElementById('feed_rate').value)||0.079;
+  var pv_production  = parseFloat(document.getElementById('pv_production').value)||9000;
+  var eigenverbrauch_calc = calcEVHaushalt(pv_production, consumption);
+  var feed_kwh_calc  = pv_production - eigenverbrauch_calc;
+  var rest_kwh_calc  = consumption - eigenverbrauch_calc;
+  var feedJahr_calc  = feed_kwh_calc * feed_rate_val;
+  var FIN_YEARS_PV   = 15;
+  var stromMitPV     = 0;
+  for (var y4=0; y4<YEARS; y4++) {
+    var pvRate   = (y4 < FIN_YEARS_PV) ? pv_monthly_val*12 : 0;
+    var restKost = rest_kwh_calc * price_main * Math.pow(1+inflation_main/100, y4);
+    stromMitPV  += pvRate + restKost - feedJahr_calc;
+  }
+
+  // Einzelne Ersparnis-Komponenten
+  var heizErsparnis  = altGesamt;                     // Heizkosten die komplett wegfallen
+  var wpKosten       = pvWpGesamt;                    // Was WP kostet
+  var stromErsparnis = stromOhnePV - stromMitPV;      // Was Strom durch PV einspart
+  // Gesamtvorteil = Heizkosten gespart - WP-Kosten + Strom gespart durch PV
+  var diff = heizErsparnis - wpKosten + stromErsparnis;
+
+  var altMonat0    = heizkostenMonat;
+  var altMonat_end = altJahr_end / 12;
+  var wpMonat1_15  = wpRateNetto + restStromKosten/12;
+  var wpMonat16    = restStromKosten/12 * Math.pow(1 + wpInfl/100, 15);
+  // Monatliche Gesamtersparnis J.1: Heizkosten - WP-Rate - WP-Reststrom + Strom-Ersparnis
+  var strom_ersparnis_m0 = (consumption * price_main + base_main*12)/12
+                         - (pv_monthly_val + rest_kwh_calc*price_main/12 - feedJahr_calc/12);
+  var ersparnis_m1   = altMonat0 - wpMonat1_15 + strom_ersparnis_m0;
+  var ersparnis_m16  = altMonat_end - wpMonat16 + strom_ersparnis_m0;
+
+  // Break-Even: wann hat Heizkostenersparnis die Netto-Investition gedeckt
+  var kumWP = 0, beWP = 0;
+  for (var mo=0; mo<360; mo++) {
+    var j3 = Math.floor(mo/12);
+    kumWP += heizkosten * Math.pow(1 + wpInfl/100, j3) / 12;
+    if (beWP === 0 && kumWP >= wpInvestNetto) { beWP = mo+1; break; }
+  }
+  var beWPStr = beWP > 0
+    ? ((beWP/12) < 1 ? 'Monat '+beWP : (beWP/12).toFixed(1).replace('.',',')+' J.')
+    : '> 30 J.';
+
+  // Ergebnis-Kacheln
+  document.getElementById('wp_label_alt').textContent       = cfg.label + ' — aktuell';
+  document.getElementById('wp_kosten_monat').textContent    = fmtEur(altMonat0);
+  document.getElementById('wp_kosten_jahr').textContent     = fmtEur(heizkosten) + ' / Jahr';
+  document.getElementById('wp_heute').textContent           = fmtEur(altMonat0);
+  document.getElementById('wp_10j').textContent             = fmtEur(altMonat_end);
+  document.getElementById('wp_gesamt_alt').textContent      = fmtEur(altGesamt);
+
+  document.getElementById('wp_pv_monat').textContent        = fmtEur(wpMonat1_15);
+  document.getElementById('wp_pv_sub').textContent          = fmtEur(wpMonat1_15) + ' / Monat (Rate + Reststrom)';
+  document.getElementById('wp_rate_display').textContent    = fmtEur(wpRateNetto) + ' / Monat';
+  document.getElementById('wp_betrieb').textContent         = Math.round(wpStromBedarf).toLocaleString('de-DE') + ' kWh (' + fmtEur(restStromKosten) + ' Zukauf)';
+  document.getElementById('wp_invest_val').textContent      = fmtEur(wpInvestNetto);
+  document.getElementById('wp_gesamt_pv').textContent       = fmtEur(pvWpGesamt);
+
+  document.getElementById('wp_diff_total').textContent      = fmtEur(diff);
+  document.getElementById('wp_heiz_ersparnis').textContent  = fmtEur(heizErsparnis - wpKosten);
+  document.getElementById('wp_strom_ersparnis').textContent = fmtEur(stromErsparnis);
+  document.getElementById('wp_diff_monat').textContent      = fmtEur(ersparnis_m1);
+  document.getElementById('wp_diff_monat_nach').textContent = fmtEur(ersparnis_m16);
+  document.getElementById('wp_breakeven').textContent       = beWPStr;
+
+  // Globale Variablen setzen
+  g_wp_extra_kwh  = restStromWP;
+  g_wp_extra_rate = wpRateNetto;
+  g_heiz_monat    = heizkostenMonat;
+
+  // feedJahr mit WP-Korrektur für updateBreakEven
+  var feed_rate_be = parseFloat(document.getElementById('feed_rate').value)||0.079;
+  var pv_prod_be   = parseFloat(document.getElementById('pv_production').value)||9000;
+  var cons_be      = parseFloat(document.getElementById('consumption').value)||7000;
+  var ev_be        = calcEVHaushalt(pv_prod_be, cons_be);
+  var feed_base_be = pv_prod_be - ev_be;
+  var wp_ev_q_be   = (parseFloat(document.getElementById('wp_eigenverbrauch_quote').value)||40) / 100;
+  var pv_fuer_wp_be = (nutzwaerme / jaz) * wp_ev_q_be;
+  var feedJahrKorr = Math.max(0, pv_feed_verfuegbar - pvAnteil) * feed_rate_be;
+
+  updateBreakEven(heizkostenMonat, wpRateNetto, restStromWP, feedJahrKorr);
+}
+
+function updateBreakEven(heizMonat, wpRate, wpKwhJahr, feedJahrKorr) {
+  var price       = parseFloat(document.getElementById('price').value)||0.34;
+  var consumption = parseFloat(document.getElementById('consumption').value)||7000;
+  var base        = parseFloat(document.getElementById('base').value)||12;
+  var inflation   = parseFloat(document.getElementById('inflation').value)||3.5;
+  var pv_monthly  = parseFloat(document.getElementById('pv_monthly').value)||186;
+  var feed_rate   = parseFloat(document.getElementById('feed_rate').value)||0.079;
+  var pv_production = parseFloat(document.getElementById('pv_production').value)||9000;
+  var eigenverbrauch = calcEVHaushalt(pv_production, consumption);
+  var rest_kwh    = consumption - eigenverbrauch;
+  // feedJahr: korrigierter Wert wenn WP aktiv, sonst normal berechnen
+  var feedJahr = (feedJahrKorr !== undefined) ? feedJahrKorr : (pv_production - eigenverbrauch) * feed_rate;
+
+  var strom_heute = stromJahr(consumption, price, base, inflation, 0) / 12;
+  var be_alt      = strom_heute + heizMonat;
+  var be_wp_rest  = wpKwhJahr * price / 12;
+  var be_rest     = rest_kwh * price / 12;
+  var be_neu      = pv_monthly + wpRate + be_rest + be_wp_rest - feedJahr/12;
+
+  var breakEvenMonat = 0;
+  var breakEvenStr;
+  if (be_alt >= be_neu) {
+    breakEvenMonat = 1;
+  } else {
+    var wpInfl = parseFloat(document.getElementById('wp_inflation').value)||5;
+    for (var mo=0; mo<360; mo++) {
+      var bj = Math.floor(mo/12);
+      var bs = stromJahr(consumption, price, base, inflation, bj) / 12;
+      var bh = heizMonat * Math.pow(1 + wpInfl/100, bj);
+      if ((bs + bh) >= be_neu) { breakEvenMonat = mo+1; break; }
+    }
+  }
+  if (breakEvenMonat === 1) { breakEvenStr = 'Monat 1'; }
+  else if (breakEvenMonat > 1) {
+    var bej = breakEvenMonat/12;
+    breakEvenStr = bej < 1 ? 'Monat '+breakEvenMonat : (bej%1===0?bej.toFixed(0):bej.toFixed(1)).replace('.',',')+' J.';
+  } else { breakEvenStr = 'Nie (0% Inflation)'; }
+
+  var ersparnis = be_alt - be_neu;
+  var amortPct  = breakEvenMonat > 0 ? Math.min(100,(breakEvenMonat/180)*100) : 100;
+
+  document.getElementById('amort_ohne_label').textContent = 'Strom + Heizung heute';
+  document.getElementById('amort_mit_label').textContent  = 'PV + WP (netto)';
+  document.getElementById('amort_ohne').textContent = fmtEur(be_alt);
+  document.getElementById('amort_mit').textContent  = fmtEur(be_neu);
+  document.getElementById('amort_breakeven').textContent = breakEvenStr;
+  document.getElementById('amort_ohne_detail').style.display = 'block';
+  document.getElementById('amort_mit_detail').style.display  = 'block';
+  document.getElementById('amort_d_strom').textContent = fmtEur(strom_heute)+'/Monat';
+  document.getElementById('amort_d_heiz').textContent  = fmtEur(heizMonat)+'/Monat';
+  document.getElementById('amort_d_pv').textContent    = fmtEur(pv_monthly)+'/Monat';
+  document.getElementById('amort_d_wp').textContent    = fmtEur(wpRate)+'/Monat';
+  document.getElementById('amort_d_rest').textContent  = fmtEur(be_rest+be_wp_rest)+'/Monat';
+  document.getElementById('amort_d_einsp').textContent = '− '+fmtEur(feedJahr/12)+'/Monat';
+  document.getElementById('amort_title').textContent   = breakEvenMonat===1
+    ? 'PV + WP ist ab Monat 1 günstiger als Strom + Heizung'
+    : 'Strom + Heizung überholt PV + WP-Rate nach '+breakEvenStr;
+  document.getElementById('amort_desc').textContent    = 'Heute zahlt der Kunde '+fmtEur(be_alt)+'/Monat (Strom '+fmtEur(strom_heute)+' + Heizung '+fmtEur(heizMonat)+') — die neue PV+WP-Rate beträgt '+fmtEur(be_neu)+'/Monat.';
+  document.getElementById('amort_mid').textContent     = breakEvenMonat===1
+    ? '→ Sofort günstiger: '+fmtEur(ersparnis)+' / Monat Ersparnis'
+    : '→ Ab '+breakEvenStr+': alte Kosten teurer als neue Rate';
+  drawGauge(amortPct);
+}
+
+// WP-Inputs auch bei update() mitrechnen
+var wpInputs = document.querySelectorAll('#wp_inputs input');
+for (var wi=0; wi<wpInputs.length; wi++) {
+  wpInputs[wi].addEventListener('input', updateWP);
+}
+// PV-Eigenverbrauch Quote Label live
+document.getElementById('wp_eigenverbrauch_quote').addEventListener('input', function() {
+  document.getElementById('wp_ev_pct_label').textContent = this.value + ' %';
+  updateWP();
+});
+
+// ============================================================
+// PSYCHOLOGIE-ELEMENTE
+// ============================================================
+
+// Ticker: 49 Minuten Vorlauf (Gesprächsdauer)
+var _clockPerSek = 0;
+var _clockOffset = 49 * 60; // 49 Minuten in Sekunden
+var _clockPageLoad = Date.now();
+
+function _tickNow() {
+  if (_clockPerSek === 0) return;
+  var sek = _clockOffset + (Date.now() - _clockPageLoad) / 1000;
+  var val = sek * _clockPerSek;
+  document.getElementById('clock_display').textContent =
+    val.toLocaleString('de-DE', {minimumFractionDigits:5, maximumFractionDigits:5}) + ' €';
+}
+setInterval(_tickNow, 50);
+
+// Warte-Kosten State
+var _waitVorteil = 0, _waitAlt = 0, _currentWait = 6;
+
+function setWait(monate, btn) {
+  _currentWait = monate;
+  // Alle Buttons zurücksetzen
+  document.querySelectorAll('#psycho_warten button').forEach(function(b) {
+    b.style.background = 'rgba(255,255,255,0.05)';
+    b.style.borderColor = 'var(--border)';
+    b.style.color = 'var(--text)';
+  });
+  if (btn) {
+    btn.style.background = 'rgba(240,225,90,0.1)';
+    btn.style.borderColor = 'rgba(240,225,90,0.4)';
+    btn.style.color = 'var(--gold)';
+  }
+  var verlust = Math.round(_waitVorteil * monate);
+  var strom   = Math.round(_waitAlt * monate);
+  var label   = monate === 1 ? '1 Monat' : monate + ' Monaten';
+  document.getElementById('wait_verlust').textContent     = verlust.toLocaleString('de-DE') + ' €';
+  document.getElementById('wait_verlust_sub').textContent = 'in ' + label + ' Wartezeit';
+  document.getElementById('wait_strom').textContent       = strom.toLocaleString('de-DE') + ' €';
+  document.getElementById('wait_strom_sub').textContent   = 'die Sie ohne PV zusätzlich zahlen';
+  var d = new Date();
+  d.setMonth(d.getMonth() + monate);
+  document.getElementById('wait_date').innerHTML =
+    'Entscheidung am <strong>' + d.toLocaleDateString('de-DE', {year:'numeric',month:'long',day:'numeric'}) + '</strong>: ' +
+    'Bis dahin zahlen Sie bereits <strong style="color:#EF4444">' + strom.toLocaleString('de-DE') + ' €</strong> für Strom und Heizung.';
+}
+
+// Renter State
+var _v20 = 0, _v5 = 0, _v10 = 0;
+
+function updateFuture() {
+  var alter = parseInt(document.getElementById('future_age').value) || 45;
+  var ms = [{j:5,v:_v5,l:'Erste Rendite'},{j:10,v:_v10,l:'Rate abbezahlt'},{j:20,v:_v20,l:'Volle Freiheit'}];
+  document.getElementById('future_timeline').innerHTML = ms.map(function(m) {
+    var last = m.j === 20;
+    return '<div style="background:var(--card2);border:1px solid '+(last?'rgba(240,225,90,0.3)':'var(--border)')+';border-radius:14px;padding:18px;text-align:center;">' +
+      '<div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">In '+m.j+' Jahren · '+(new Date().getFullYear()+m.j)+'</div>' +
+      '<div style="font-family:\'Syne\',sans-serif;font-size:26px;font-weight:900;color:'+(last?'var(--gold)':'#22C55E')+';line-height:1;">'+(alter+m.j)+'</div>' +
+      '<div style="font-size:10px;color:var(--muted);margin-bottom:6px;">Jahre alt</div>' +
+      '<div style="font-size:13px;font-weight:600;color:var(--text);">+ '+m.v.toLocaleString('de-DE')+' €</div>' +
+      '<div style="font-size:10px;color:var(--muted);margin-top:2px;">'+m.l+'</div>' +
+    '</div>';
+  }).join('');
+  var a20 = alter + 20;
+  document.getElementById('future_tagline').innerHTML =
+    a20 >= 60 && a20 <= 72 ? 'Im Rentenalter mit <strong>'+_v20.toLocaleString('de-DE')+' € mehr</strong> — das ist finanzielle Freiheit.' :
+    a20 < 60 ? 'Mit <strong>'+_v20.toLocaleString('de-DE')+' €</strong> früher in Rente — oder einfach mehr vom Leben.' :
+    'Mit <strong>'+_v20.toLocaleString('de-DE')+' €</strong> Ersparnis — für Sie, Ihre Kinder, Ihre Enkel.';
+}
+
+// Wird von update() aufgerufen
+function updatePsycho(s1, s3, bar1, bar4, years) {
+  var vorteil = Math.round(s1 - s3);
+  _v20 = vorteil;
+  _v5  = Math.round(vorteil * 0.22);
+  _v10 = Math.round(vorteil * 0.53);
+
+  // 2. Ticker
+  _clockPerSek = bar1 / 30 / 24 / 3600;
+  _tickNow(); // sofort ersten Wert setzen
+  document.getElementById('clock_note').textContent =
+    fmtEur(bar1) + ' / Monat · ' + (_clockPerSek * 100).toFixed(4) + ' Cent / Sek.';
+
+  // 5. Warten
+  _waitVorteil = Math.round(bar1 - bar4);
+  _waitAlt = bar1;
+  document.getElementById('wait_vorteil_mo').textContent = fmtEur(_waitVorteil);
+  setWait(_currentWait, null);
+
+  // 6. Zukunft
+  document.getElementById('future_betrag').textContent = fmtEur(vorteil);
+  updateFuture();
+
+  // 7. Strompreis-Szenario aktualisieren
+  updateSzenario();
+}
+
+// ============================================================
+// STROMPREIS SZENARIO SLIDER
+// ============================================================
+var _preisZuschlag = 0;
+document.getElementById('preis_szenario').addEventListener('input', function() {
+  _preisZuschlag = parseInt(this.value);
+  document.getElementById('preis_szenario_label').textContent = (_preisZuschlag > 0 ? '+ ' : '') + _preisZuschlag + ' %';
+  updateSzenario();
+});
+
+function updateSzenario() {
+  var basePrice  = parseFloat(document.getElementById('price').value) || 0.34;
+  var newPrice   = basePrice * (1 + _preisZuschlag / 100);
+  var consumption= parseFloat(document.getElementById('consumption').value) || 7000;
+  var base       = parseFloat(document.getElementById('base').value) || 12;
+  var pv_monthly = parseFloat(document.getElementById('pv_monthly').value) || 186;
+  var feed_rate  = parseFloat(document.getElementById('feed_rate').value) || 0.079;
+  var pv_prod    = parseFloat(document.getElementById('pv_production').value) || 9000;
+  var inflation  = parseFloat(document.getElementById('inflation').value) || 3.5;
+  var YEARS      = parseInt(document.getElementById('years').value) || 20;
+  var FIN_YEARS  = 15;
+
+  var ev       = calcEVHaushalt(pv_prod, consumption);
+  var feed_kwh = Math.max(0, pv_prod - ev);
+  var rest_kwh = Math.max(0, consumption - ev);
+  var feedJ    = feed_kwh * feed_rate;
+  var pvJahr   = pv_monthly * 12;
+
+  var s1_new = 0, s3_new = 0;
+  for (var y = 0; y < YEARS; y++) {
+    s1_new += consumption * newPrice * Math.pow(1 + inflation/100, y) + base * 12;
+    s3_new += (y < FIN_YEARS ? pvJahr : 0) + rest_kwh * newPrice * Math.pow(1 + inflation/100, y) - feedJ;
+  }
+  var m_ohne = (consumption * newPrice + base * 12) / 12;
+  var m_mit  = pv_monthly + rest_kwh * newPrice / 12 - feedJ / 12;
+
+  document.getElementById('szen_preis').textContent     = (newPrice * 100).toFixed(1).replace('.', ',') + ' ct/kWh';
+  document.getElementById('szen_ersparnis').textContent = fmtEur(Math.round(m_ohne - m_mit));
+  document.getElementById('szen_vorteil').textContent   = fmtEur(Math.round(s1_new - s3_new));
+}
+</script>
+</body>
+</html>
