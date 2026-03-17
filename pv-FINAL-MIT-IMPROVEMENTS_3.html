@@ -1817,9 +1817,12 @@ function update() {
   if (m0_boerse >= pv_boerse_m) {
     breakEvenMonat2 = 1;
   } else {
+    var wpInfl_be2 = wpActive ? (parseFloat(document.getElementById('wp_inflation').value)||5) : 0;
     for (var mo2 = 0; mo2 < 360; mo2++) {
       var j2 = Math.floor(mo2 / 12);
-      if (stromJahr(consumption, price, base, inflation, j2) / 12 >= pv_boerse_m) {
+      var be2_strom = stromJahr(consumption, price, base, inflation, j2) / 12;
+      var be2_heiz  = wpActive ? m_alt_heiz_bar * Math.pow(1 + wpInfl_be2/100, j2) : 0;
+      if ((be2_strom + be2_heiz) >= pv_boerse_m) {
         breakEvenMonat2 = mo2 + 1; break;
       }
     }
