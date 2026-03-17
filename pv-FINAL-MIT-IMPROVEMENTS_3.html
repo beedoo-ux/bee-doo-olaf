@@ -2253,7 +2253,7 @@ function updatePsycho(s1, s3, bar1, bar4, years) {
   var kb1 = bar1; // ohne PV heute
   var kb2 = bar4; // mit PV J.1-15
   var kb3 = bar4 - (pv_monthly_global || 186); // ab J.16 nur Reststrom
-  var kbMax = kb1;
+  var kbMax = kb1 || 1; // Division durch Null vermeiden
   document.getElementById('kb_bar1').style.width = '100%';
   document.getElementById('kb_bar2').style.width = Math.round(kb2/kbMax*100) + '%';
   document.getElementById('kb_bar3').style.width = Math.max(4, Math.round(Math.max(0,kb3)/kbMax*100)) + '%';
@@ -2263,10 +2263,12 @@ function updatePsycho(s1, s3, bar1, bar4, years) {
 
   bar1_val_global = bar1;
   bar4_val_global = bar4;
-  _clockPerSek = bar1 / 30 / 24 / 3600;
-  _tickNow(); // sofort ersten Wert setzen
-  document.getElementById('clock_note').textContent =
-    fmtEur(bar1) + ' / Monat · ' + (_clockPerSek * 100).toFixed(4) + ' Cent / Sek.';
+  if (bar1 > 0) {
+    _clockPerSek = bar1 / 30 / 24 / 3600;
+    document.getElementById('clock_note').textContent =
+      fmtEur(bar1) + ' / Monat · ' + (_clockPerSek * 100).toFixed(4) + ' Cent / Sek.';
+  }
+  _tickNow();
 
   // 5. Warten
   _waitVorteil = Math.round(bar1 - bar4);
