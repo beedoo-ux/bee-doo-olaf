@@ -2161,30 +2161,24 @@ var _clockPageLoad = Date.now();
 var bar1_val_global = 0, bar4_val_global = 0;
 
 function _tickNow() {
-  try {
-    if (_clockPerSek === 0) _clockPerSek = 210 / 30 / 24 / 3600;
-    var elapsed = (Date.now() - _clockPageLoad) / 1000;
-    var totalSek = _clockOffset + elapsed;
-    var val = totalSek * _clockPerSek;
-    var pvMonat = bar4_val_global || 188;
-    var monat = bar1_val_global || 210;
-
-    var el = document.getElementById('clock_display');
-    if (el) el.textContent = val.toLocaleString('de-DE', {minimumFractionDigits:5, maximumFractionDigits:5}) + ' €';
-    var el2 = document.getElementById('clock_liter');
-    if (el2) el2.textContent = (val / 2.0).toLocaleString('de-DE', {minimumFractionDigits:5, maximumFractionDigits:5}) + ' L';
-    var el3 = document.getElementById('clock_jahr');
-    if (el3) el3.textContent = (monat * 12).toLocaleString('de-DE') + ' €';
-    var el4 = document.getElementById('clock_gespart');
-    if (el4) el4.textContent = (Math.max(0, monat - pvMonat) * 12).toLocaleString('de-DE') + ' €';
-
-    var min = Math.floor(totalSek / 60);
-    var sec = Math.floor(totalSek % 60);
-    var el5 = document.getElementById('clock_timer');
-    if (el5) el5.textContent = min + ':' + (sec < 10 ? '0' : '') + sec + ' min';
-  } catch(e) { console.error('Ticker:', e); }
+  if (_clockPerSek === 0) return;
+  var sek = _clockOffset + (Date.now() - _clockPageLoad) / 1000;
+  var val = sek * _clockPerSek;
+  var monat = bar1_val_global || 210;
+  var pvMonat = bar4_val_global || 188;
+  document.getElementById('clock_display').textContent =
+    val.toLocaleString('de-DE', {minimumFractionDigits:5, maximumFractionDigits:5}) + ' €';
+  document.getElementById('clock_liter').textContent =
+    (val / 2.0).toLocaleString('de-DE', {minimumFractionDigits:5, maximumFractionDigits:5}) + ' L';
+  document.getElementById('clock_jahr').textContent =
+    (monat * 12).toLocaleString('de-DE') + ' €';
+  document.getElementById('clock_gespart').textContent =
+    (Math.max(0, monat - pvMonat) * 12).toLocaleString('de-DE') + ' €';
+  var min = Math.floor(sek / 60);
+  var sec = Math.floor(sek % 60);
+  document.getElementById('clock_timer').textContent =
+    min + ':' + (sec < 10 ? '0' : '') + sec + ' min';
 }
-_tickNow();
 setInterval(_tickNow, 50);
 
 // Warte-Kosten State
@@ -2263,12 +2257,10 @@ function updatePsycho(s1, s3, bar1, bar4, years) {
 
   bar1_val_global = bar1;
   bar4_val_global = bar4;
-  if (bar1 > 0) {
-    _clockPerSek = bar1 / 30 / 24 / 3600;
-    document.getElementById('clock_note').textContent =
-      fmtEur(bar1) + ' / Monat · ' + (_clockPerSek * 100).toFixed(4) + ' Cent / Sek.';
-  }
+  _clockPerSek = bar1 / 30 / 24 / 3600;
   _tickNow();
+  document.getElementById('clock_note').textContent =
+    fmtEur(bar1) + ' / Monat · ' + (_clockPerSek * 100).toFixed(4) + ' Cent / Sek.';
 
   // 5. Warten
   _waitVorteil = Math.round(bar1 - bar4);
