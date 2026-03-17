@@ -437,6 +437,7 @@
   /* PDF BUTTON */
   .pdf-btn{position:fixed;bottom:28px;right:24px;background:var(--gold);color:#1A1A1A;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;letter-spacing:1px;padding:14px 22px;border-radius:99px;border:none;cursor:pointer;box-shadow:0 4px 24px rgba(245,158,11,0.4);transition:transform 0.2s,box-shadow 0.2s;z-index:100;}
   .pdf-btn:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(245,158,11,0.5);}
+  @keyframes tickerPulse { 0%,100%{opacity:.3;width:40px} 50%{opacity:1;width:120px} }
   @media print{.pdf-btn{display:none;} body{background:#fff;color:#000;} .container{padding:20px;}}
 </style>
 </head>
@@ -956,10 +957,31 @@
 
     <!-- PSYCHO 2: LIVE-TICKER -->
   <div class="kontext-card" id="psycho_ticker">
-    <div class="section-label">⚡ Ihre Stromkosten — live</div>
-    <p style="font-size:14px;color:var(--muted);margin-bottom:12px;">Seit Beginn dieses Gesprächs haben Sie bereits bezahlt:</p>
-    <div id="clock_display" style="font-family:'Syne',sans-serif;font-size:clamp(36px,6vw,60px);font-weight:900;color:var(--gold);letter-spacing:-1px;line-height:1;margin-bottom:12px;">0,00 €</div>
-    <p style="font-size:12px;color:var(--muted);" id="clock_note">–</p>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div class="section-label" style="margin-bottom:0;">⚡ Ihre Stromkosten — live</div>
+      <div id="clock_timer" style="font-family:monospace;font-size:13px;color:var(--muted);background:var(--card2);padding:4px 12px;border-radius:100px;border:1px solid var(--border);">49:00 min</div>
+    </div>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:16px;">Seit Beginn dieses Gesprächs haben Sie bereits bezahlt:</p>
+    <div id="clock_display" style="font-family:'Syne',sans-serif;font-size:clamp(44px,7vw,72px);font-weight:900;color:var(--gold);letter-spacing:0.05em;line-height:1.1;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;">–</div>
+    <div style="height:3px;background:var(--gold);border-radius:2px;margin:16px 0;animation:tickerPulse 1.5s ease-in-out infinite;"></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px;">
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;">
+        <div class="section-label" style="margin-bottom:6px;">⛽ Benzin getankt</div>
+        <div id="clock_liter" style="font-family:'Syne',sans-serif;font-size:22px;font-weight:900;color:var(--gold);letter-spacing:0.03em;">–</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">Liter à 2,00 €</div>
+      </div>
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;">
+        <div class="section-label" style="margin-bottom:6px;">📅 Hochgerechnet</div>
+        <div id="clock_jahr" style="font-family:'Syne',sans-serif;font-size:22px;font-weight:900;color:var(--gold);letter-spacing:0.03em;">–</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">Stromkosten / Jahr</div>
+      </div>
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;">
+        <div class="section-label" style="margin-bottom:6px;">🌱 Mit PV gespart</div>
+        <div id="clock_gespart" style="font-family:'Syne',sans-serif;font-size:22px;font-weight:900;color:#22C55E;letter-spacing:0.03em;">–</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">Ersparnis / Jahr</div>
+      </div>
+    </div>
+    <p style="font-size:11px;color:var(--muted);" id="clock_note">–</p>
   </div>
 
   <!-- PSYCHO 5: WARTE-KOSTEN -->
@@ -2089,10 +2111,25 @@ var _clockPageLoad = Date.now();
 
 function _tickNow() {
   if (_clockPerSek === 0) return;
-  var sek = _clockOffset + (Date.now() - _clockPageLoad) / 1000;
-  var val = sek * _clockPerSek;
+  var elapsed = (Date.now() - _clockPageLoad) / 1000;
+  var totalSek = _clockOffset + elapsed;
+  var val = totalSek * _clockPerSek;
+  var pvMonat = bar4_val_global || 188;
+  var monat = bar1_val_global || 210;
+
   document.getElementById('clock_display').textContent =
     val.toLocaleString('de-DE', {minimumFractionDigits:5, maximumFractionDigits:5}) + ' €';
+  document.getElementById('clock_liter').textContent =
+    (val / 2.0).toLocaleString('de-DE', {minimumFractionDigits:3, maximumFractionDigits:3}) + ' L';
+  document.getElementById('clock_jahr').textContent =
+    (monat * 12).toLocaleString('de-DE') + ' €';
+  document.getElementById('clock_gespart').textContent =
+    (Math.max(0, monat - pvMonat) * 12).toLocaleString('de-DE') + ' €';
+
+  var min = Math.floor(totalSek / 60);
+  var sec = Math.floor(totalSek % 60);
+  document.getElementById('clock_timer').textContent =
+    min + ':' + (sec < 10 ? '0' : '') + sec + ' min';
 }
 setInterval(_tickNow, 50);
 
@@ -2150,6 +2187,8 @@ function updateFuture() {
 }
 
 // Wird von update() aufgerufen
+var bar1_val_global = 0, bar4_val_global = 0;
+
 function updatePsycho(s1, s3, bar1, bar4, years) {
   var vorteil = Math.round(s1 - s3);
   _v20 = vorteil;
@@ -2157,6 +2196,8 @@ function updatePsycho(s1, s3, bar1, bar4, years) {
   _v10 = Math.round(vorteil * 0.53);
 
   // 2. Ticker
+  bar1_val_global = bar1;
+  bar4_val_global = bar4;
   _clockPerSek = bar1 / 30 / 24 / 3600;
   _tickNow(); // sofort ersten Wert setzen
   document.getElementById('clock_note').textContent =
