@@ -1226,6 +1226,7 @@ function calcEVHaushalt(pv_production, consumption) {
 }
 
 var wpActive      = false;
+var _evQuote      = 40;  // PV-Eigenverbrauch WP Slider
 var heizart       = 'gas';
 var foerderung    = 30;
 var g_wp_extra_kwh  = 0;
@@ -2132,7 +2133,6 @@ for (var wi=0; wi<wpInputs.length; wi++) {
   wpInputs[wi].addEventListener('input', function() { updateWP(); update(); });
 }
 // PV-Eigenverbrauch Slider — Label + volle Neuberechnung
-var _evQuote = 40;
 document.getElementById('wp_eigenverbrauch_quote').addEventListener('input', function() {
   _evQuote = parseInt(this.value);
   document.getElementById('wp_ev_pct_label').textContent = _evQuote + ' %';
