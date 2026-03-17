@@ -1866,6 +1866,7 @@ function toggleWP() {
   document.querySelector('.wp-toggle-bar').classList.toggle('active', wpActive);
   document.getElementById('wp_switch').classList.toggle('on', wpActive);
   document.getElementById('wp_inputs').classList.toggle('visible', wpActive);
+  if (wpActive) registerWPListeners();
   if (!wpActive) { g_heiz_monat = 0; g_wp_extra_rate = 0; g_wp_extra_kwh = 0; }
   update();
   if (wpActive) { updateWP(); update(); }
@@ -2130,16 +2131,22 @@ function updateBreakEven(heizMonat, wpRate, wpKwhJahr, feedJahrKorr) {
 }
 
 // WP-Inputs auch bei update() mitrechnen
-var wpInputs = document.querySelectorAll('#wp_inputs input');
-for (var wi=0; wi<wpInputs.length; wi++) {
-  wpInputs[wi].addEventListener('input', function() {
-    if (this.id === 'wp_eigenverbrauch_quote') {
-      _evQuote = parseInt(this.value);
-      document.getElementById('wp_ev_pct_label').textContent = _evQuote + ' %';
-    }
-    updateWP();
-    update();
-  });
+// WP-Inputs: EventListener wird in toggleWP() gesetzt (nach visible)
+var _wpListenersRegistered = false;
+function registerWPListeners() {
+  if (_wpListenersRegistered) return;
+  _wpListenersRegistered = true;
+  var wpInputs = document.querySelectorAll('#wp_inputs input');
+  for (var wi=0; wi<wpInputs.length; wi++) {
+    wpInputs[wi].addEventListener('input', function() {
+      if (this.id === 'wp_eigenverbrauch_quote') {
+        _evQuote = parseInt(this.value);
+        document.getElementById('wp_ev_pct_label').textContent = _evQuote + ' %';
+      }
+      updateWP();
+      update();
+    });
+  }
 }
 
 // ============================================================
