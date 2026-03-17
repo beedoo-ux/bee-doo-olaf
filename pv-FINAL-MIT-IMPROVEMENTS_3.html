@@ -947,8 +947,12 @@
       <div class="kontext-item"><div class="ki-emoji">🚗</div><div class="ki-val" id="k_auto">–</div><div class="ki-label">Mittelklasse&shy;autos (à 30.000 €)</div></div>
       <div class="kontext-item"><div class="ki-emoji">⛽</div><div class="ki-val" id="k_tank">–</div><div class="ki-label">Tank&shy;füllungen (à 80 €)</div></div>
       <div class="kontext-item"><div class="ki-emoji">🛒</div><div class="ki-val" id="k_einkauf">–</div><div class="ki-label">Wochen&shy;einkäufe (à 150 €)</div></div>
-      <div class="kontext-item"><div class="ki-emoji">☕</div><div class="ki-val" id="k_kaffee">–</div><div class="ki-label">Café-Besuche (à 5 €)</div></div>
+      <div class="kontext-item"><div class="ki-emoji">🏖️</div><div class="ki-val" id="k_urlaub2">–</div><div class="ki-label">Wochen Urlaub (à 2.000 €)</div></div>
       <div class="kontext-item"><div class="ki-emoji">🍕</div><div class="ki-val" id="k_pizza">–</div><div class="ki-label">Restaurant&shy;besuche (à 40 €)</div></div>
+      <div class="kontext-item"><div class="ki-emoji">🎁</div><div class="ki-val" id="k_geschenk">–</div><div class="ki-label">Weihnachts&shy;geschenke (à 50 €)</div></div>
+      <div class="kontext-item"><div class="ki-emoji">💇</div><div class="ki-val" id="k_friseur">–</div><div class="ki-label">Friseur&shy;besuche (à 100 €)</div></div>
+      <div class="kontext-item"><div class="ki-emoji">💅</div><div class="ki-val" id="k_nagel">–</div><div class="ki-label">Nagel&shy;studio (à 50 €)</div></div>
+      <div class="kontext-item"><div class="ki-emoji">⚽</div><div class="ki-val" id="k_stadion">–</div><div class="ki-label">Stadion&shy;besuche (à 80 €)</div></div>
     </div>
   </div>
 
@@ -1022,6 +1026,34 @@
     </div>
     <div id="future_timeline" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;"></div>
     <p id="future_tagline" style="margin-top:20px;font-size:14px;color:var(--muted);text-align:center;line-height:1.6;"></p>
+  </div>
+
+  <!-- BALKEN VERGLEICH -->
+  <div class="kontext-card" id="kontext_balken">
+    <div class="section-label">Wohin fließt das Geld — mit und ohne PV</div>
+    <div style="margin-top:16px;display:flex;flex-direction:column;gap:14px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="font-size:12px;color:var(--muted);width:130px;flex-shrink:0;">Ohne PV — heute</div>
+        <div style="flex:1;height:10px;background:var(--card2);border-radius:5px;overflow:hidden;">
+          <div id="kb_bar1" style="height:100%;background:#EF4444;border-radius:5px;width:100%;transition:width 0.6s ease;"></div>
+        </div>
+        <div id="kb_amt1" style="font-size:13px;font-weight:600;color:#EF4444;width:70px;text-align:right;">–</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="font-size:12px;color:var(--muted);width:130px;flex-shrink:0;">Mit PV (J. 1–15)</div>
+        <div style="flex:1;height:10px;background:var(--card2);border-radius:5px;overflow:hidden;">
+          <div id="kb_bar2" style="height:100%;background:var(--gold);border-radius:5px;width:55%;transition:width 0.6s ease;"></div>
+        </div>
+        <div id="kb_amt2" style="font-size:13px;font-weight:600;color:var(--gold);width:70px;text-align:right;">–</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="font-size:12px;color:var(--muted);width:130px;flex-shrink:0;">Mit PV (ab J. 16)</div>
+        <div style="flex:1;height:10px;background:var(--card2);border-radius:5px;overflow:hidden;">
+          <div id="kb_bar3" style="height:100%;background:#22C55E;border-radius:5px;width:12%;transition:width 0.6s ease;"></div>
+        </div>
+        <div id="kb_amt3" style="font-size:13px;font-weight:600;color:#22C55E;width:70px;text-align:right;">–</div>
+      </div>
+    </div>
   </div>
 
   <!-- JAHRESVERLAUF -->
@@ -1406,12 +1438,16 @@ function update() {
     // kontext_vorteil = rot minus grün
     var vorteil = s1 - s3;
     document.getElementById('kontext_vorteil').textContent = fmtEur(vorteil);
-    document.getElementById('k_urlaub').textContent  = fmtN(vorteil/1500);
-    document.getElementById('k_auto').textContent    = fmtN(vorteil/30000)+'×';
-    document.getElementById('k_tank').textContent    = fmtN(vorteil/80);
-    document.getElementById('k_einkauf').textContent = fmtN(vorteil/150);
-    document.getElementById('k_kaffee').textContent  = fmtN(vorteil/5);
-    document.getElementById('k_pizza').textContent   = fmtN(vorteil/40);
+    document.getElementById('k_urlaub').textContent   = fmtN(vorteil/1500);
+    document.getElementById('k_auto').textContent     = fmtN(vorteil/30000)+'×';
+    document.getElementById('k_tank').textContent     = fmtN(vorteil/80);
+    document.getElementById('k_einkauf').textContent  = fmtN(vorteil/150);
+    document.getElementById('k_urlaub2').textContent  = fmtN(vorteil/2000);
+    document.getElementById('k_pizza').textContent    = fmtN(vorteil/40);
+    document.getElementById('k_geschenk').textContent = fmtN(vorteil/50);
+    document.getElementById('k_friseur').textContent  = fmtN(vorteil/100);
+    document.getElementById('k_nagel').textContent    = fmtN(vorteil/50);
+    document.getElementById('k_stadion').textContent  = fmtN(vorteil/80);
   } else {
     document.getElementById('diff_heiz_box').style.display   = 'none';
     document.getElementById('diff_gesamt_box').style.display = 'none';
@@ -1622,12 +1658,16 @@ function update() {
   document.getElementById('kontext_suffix').textContent = wpActive ? '(Strom + Heizung gespart)' : '';
   if (!wpActive) {
     document.getElementById('kontext_vorteil').textContent=fmtEur(vorteil);
-    document.getElementById('k_urlaub').textContent=fmtN(vorteil/1500);
-    document.getElementById('k_auto').textContent=fmtN(vorteil/30000)+'×';
-    document.getElementById('k_tank').textContent=fmtN(vorteil/80);
-    document.getElementById('k_einkauf').textContent=fmtN(vorteil/150);
-    document.getElementById('k_kaffee').textContent=fmtN(vorteil/5);
-    document.getElementById('k_pizza').textContent=fmtN(vorteil/40);
+    document.getElementById('k_urlaub').textContent   = fmtN(vorteil/1500);
+    document.getElementById('k_auto').textContent     = fmtN(vorteil/30000)+'×';
+    document.getElementById('k_tank').textContent     = fmtN(vorteil/80);
+    document.getElementById('k_einkauf').textContent  = fmtN(vorteil/150);
+    document.getElementById('k_urlaub2').textContent  = fmtN(vorteil/2000);
+    document.getElementById('k_pizza').textContent    = fmtN(vorteil/40);
+    document.getElementById('k_geschenk').textContent = fmtN(vorteil/50);
+    document.getElementById('k_friseur').textContent  = fmtN(vorteil/100);
+    document.getElementById('k_nagel').textContent    = fmtN(vorteil/50);
+    document.getElementById('k_stadion').textContent  = fmtN(vorteil/80);
   }
 
   // WP-Zeilen in Szenario 2+3 ein-/ausblenden + Titel
@@ -2193,6 +2233,18 @@ function updatePsycho(s1, s3, bar1, bar4, years) {
   _v10 = Math.round(vorteil * 0.53);
 
   // 2. Ticker
+  // Balken-Vergleich
+  var kb1 = bar1; // ohne PV heute
+  var kb2 = bar4; // mit PV J.1-15
+  var kb3 = bar4 - (pv_monthly_global || 186); // ab J.16 nur Reststrom
+  var kbMax = kb1;
+  document.getElementById('kb_bar1').style.width = '100%';
+  document.getElementById('kb_bar2').style.width = Math.round(kb2/kbMax*100) + '%';
+  document.getElementById('kb_bar3').style.width = Math.max(4, Math.round(Math.max(0,kb3)/kbMax*100)) + '%';
+  document.getElementById('kb_amt1').textContent = fmtEur(kb1) + '/Mo';
+  document.getElementById('kb_amt2').textContent = fmtEur(kb2) + '/Mo';
+  document.getElementById('kb_amt3').textContent = fmtEur(Math.max(0,kb3)) + '/Mo';
+
   bar1_val_global = bar1;
   bar4_val_global = bar4;
   _clockPerSek = bar1 / 30 / 24 / 3600;
