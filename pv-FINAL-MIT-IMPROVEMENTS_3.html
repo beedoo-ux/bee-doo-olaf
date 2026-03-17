@@ -2129,7 +2129,7 @@ function updateBreakEven(heizMonat, wpRate, wpKwhJahr, feedJahrKorr) {
 // WP-Inputs auch bei update() mitrechnen
 var wpInputs = document.querySelectorAll('#wp_inputs input');
 for (var wi=0; wi<wpInputs.length; wi++) {
-  wpInputs[wi].addEventListener('input', updateWP);
+  wpInputs[wi].addEventListener('input', function() { updateWP(); update(); });
 }
 // PV-Eigenverbrauch Quote Label live
 document.getElementById('wp_eigenverbrauch_quote').addEventListener('input', function() {
