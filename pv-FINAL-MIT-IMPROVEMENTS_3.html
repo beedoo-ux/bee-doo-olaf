@@ -2120,7 +2120,7 @@ function _tickNow() {
   document.getElementById('clock_display').textContent =
     val.toLocaleString('de-DE', {minimumFractionDigits:5, maximumFractionDigits:5}) + ' €';
   document.getElementById('clock_liter').textContent =
-    (val / 2.0).toLocaleString('de-DE', {minimumFractionDigits:3, maximumFractionDigits:3}) + ' L';
+    (val / 2.0).toLocaleString('de-DE', {minimumFractionDigits:5, maximumFractionDigits:5}) + ' L';
   document.getElementById('clock_jahr').textContent =
     (monat * 12).toLocaleString('de-DE') + ' €';
   document.getElementById('clock_gespart').textContent =
