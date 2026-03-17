@@ -647,7 +647,7 @@
           <div class="param-item">
             <label>PV-Eigenverbrauch WP <span id="wp_ev_pct_label" style="color:var(--gold);font-weight:700;">40 %</span></label>
             <input type="range" id="wp_eigenverbrauch_quote" min="30" max="60" step="5" value="40" style="width:100%;accent-color:#F0E15A;cursor:pointer;height:6px;margin-top:8px;">
-            <div class="unit">Anteil WP-Strombedarf aus PV (30–60 %)</div>
+            <div class="unit">Anteil WP-Strombedarf aus PV (30–60 %) <span id="ev_hint" style="color:#EF4444;display:none;">· Erst PV-Produktion eingeben</span></div>
           </div>
 
           <!-- WP-Strom automatisch -->
@@ -1268,6 +1268,8 @@ function update() {
   // BERECHNUNG aus Produktion — Eigenverbrauchsquote je nach Verhältnis Bedarf/Produktion
   var eigenverbrauch = calcEVHaushalt(pv_production, consumption);
   var feed_kwh       = pv_production - eigenverbrauch;                       // Überschuss ins Netz
+  var evHint = document.getElementById('ev_hint');
+  if (evHint) evHint.style.display = (wpActive && pv_production === 0) ? 'inline' : 'none';
   var rest_kwh       = consumption - eigenverbrauch;                         // verbleibender Zukauf
 
   // Berechnete Werte anzeigen
