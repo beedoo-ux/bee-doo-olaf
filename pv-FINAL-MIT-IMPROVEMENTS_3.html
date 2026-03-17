@@ -582,10 +582,7 @@
                 <div class="wh-icon">🟡</div>
                 <div class="wh-label">Pellets</div>
               </div>
-              <div class="wp-heizart-btn" id="btn_nachtspeicher" onclick="setHeizart('nachtspeicher')">
-                <div class="wh-icon">⚡</div>
-                <div class="wh-label">Nachtspeicher</div>
-              </div>
+
             </div>
           </div>
 
@@ -596,7 +593,7 @@
             <div class="unit" id="wp_verbrauch_unit">kWh / Jahr</div>
           </div>
           <div class="param-item">
-            <label id="wp_preis_label">Gaspreis</label>
+            <label id="wp_preis_label">Gaspreis <span style="font-size:10px;color:var(--muted);font-weight:400;">· Stand 03/2026</span></label>
             <input type="number" id="wp_preis" value="0.12" step="0.01">
             <div class="unit" id="wp_preis_unit">€ / kWh</div>
           </div>
@@ -1208,7 +1205,7 @@ var heizartConfig = {
   gas:          { label:'Erdgas',        verbrauchLabel:'Jahresverbrauch Gas',    verbrauchUnit:'kWh / Jahr',   preisLabel:'Gaspreis',       preisUnit:'€ / kWh',   defaultVerbrauch:20000, defaultPreis:0.12, wirkungsgrad:0.95, einheit:'kWh' },
   oel:          { label:'Heizöl',        verbrauchLabel:'Jahresverbrauch Öl',     verbrauchUnit:'Liter / Jahr', preisLabel:'Heizölpreis',    preisUnit:'€ / Liter', defaultVerbrauch:2000,  defaultPreis:0.95, wirkungsgrad:0.85, einheit:'L',  kwh_pro_einheit:10 },
   pellet:       { label:'Pellets',       verbrauchLabel:'Jahresverbrauch Pellets',verbrauchUnit:'kg / Jahr',    preisLabel:'Pelletpreis',    preisUnit:'€ / kg',    defaultVerbrauch:4000,  defaultPreis:0.38, wirkungsgrad:0.90, einheit:'kg', kwh_pro_einheit:4.9 },
-  nachtspeicher:{ label:'Nachtspeicher', verbrauchLabel:'Jahresverbrauch Strom',  verbrauchUnit:'kWh / Jahr',   preisLabel:'Nachtstrompreis',preisUnit:'€ / kWh',   defaultVerbrauch:8000,  defaultPreis:0.22, wirkungsgrad:1.00, einheit:'kWh' }
+  nachtspeicher:{ label:'Nachtspeicher', verbrauchLabel:'Jahresverbrauch Strom',  verbrauchUnit:'kWh / Jahr',   preisLabel:'Nachtstrompreis',preisUnit:'€ / kWh',   defaultVerbrauch:8000,  defaultPreis:0.22, wirkungsgrad:1.00, einheit:'kWh' } /* entfernt */
 };
 
 function fmtEur(val) {
