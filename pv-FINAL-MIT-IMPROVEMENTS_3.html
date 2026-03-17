@@ -964,7 +964,7 @@
       <div id="clock_timer" style="font-family:monospace;font-size:13px;color:var(--muted);background:var(--card2);padding:4px 12px;border-radius:100px;border:1px solid var(--border);">49:00 min</div>
     </div>
     <p style="font-size:14px;color:var(--muted);margin-bottom:16px;">Seit Beginn dieses Gesprächs haben Sie bereits bezahlt:</p>
-    <div id="clock_display" style="font-family:'Syne',sans-serif;font-size:clamp(44px,7vw,72px);font-weight:900;color:var(--gold);letter-spacing:0.05em;line-height:1.1;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;">–</div>
+    <div id="clock_display" style="font-family:'Syne',sans-serif;font-size:clamp(28px,5vw,60px);font-weight:900;color:var(--gold);letter-spacing:0.03em;line-height:1.2;font-variant-numeric:tabular-nums;overflow:visible;word-break:break-all;">–</div>
     <div style="height:3px;background:var(--gold);border-radius:2px;margin:16px 0;animation:tickerPulse 1.5s ease-in-out infinite;"></div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px;">
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;">
@@ -2158,28 +2158,31 @@ function registerWPListeners() {
 var _clockPerSek = 0;
 var _clockOffset = 49 * 60; // 49 Minuten in Sekunden
 var _clockPageLoad = Date.now();
+var bar1_val_global = 0, bar4_val_global = 0;
 
 function _tickNow() {
-  if (_clockPerSek === 0) _clockPerSek = 210 / 30 / 24 / 3600;
-  var elapsed = (Date.now() - _clockPageLoad) / 1000;
-  var totalSek = _clockOffset + elapsed;
-  var val = totalSek * _clockPerSek;
-  var pvMonat = bar4_val_global || 188;
-  var monat = bar1_val_global || 210;
+  try {
+    if (_clockPerSek === 0) _clockPerSek = 210 / 30 / 24 / 3600;
+    var elapsed = (Date.now() - _clockPageLoad) / 1000;
+    var totalSek = _clockOffset + elapsed;
+    var val = totalSek * _clockPerSek;
+    var pvMonat = bar4_val_global || 188;
+    var monat = bar1_val_global || 210;
 
-  document.getElementById('clock_display').textContent =
-    val.toLocaleString('de-DE', {minimumFractionDigits:5, maximumFractionDigits:5}) + ' €';
-  document.getElementById('clock_liter').textContent =
-    (val / 2.0).toLocaleString('de-DE', {minimumFractionDigits:5, maximumFractionDigits:5}) + ' L';
-  document.getElementById('clock_jahr').textContent =
-    (monat * 12).toLocaleString('de-DE') + ' €';
-  document.getElementById('clock_gespart').textContent =
-    (Math.max(0, monat - pvMonat) * 12).toLocaleString('de-DE') + ' €';
+    var el = document.getElementById('clock_display');
+    if (el) el.textContent = val.toLocaleString('de-DE', {minimumFractionDigits:5, maximumFractionDigits:5}) + ' €';
+    var el2 = document.getElementById('clock_liter');
+    if (el2) el2.textContent = (val / 2.0).toLocaleString('de-DE', {minimumFractionDigits:5, maximumFractionDigits:5}) + ' L';
+    var el3 = document.getElementById('clock_jahr');
+    if (el3) el3.textContent = (monat * 12).toLocaleString('de-DE') + ' €';
+    var el4 = document.getElementById('clock_gespart');
+    if (el4) el4.textContent = (Math.max(0, monat - pvMonat) * 12).toLocaleString('de-DE') + ' €';
 
-  var min = Math.floor(totalSek / 60);
-  var sec = Math.floor(totalSek % 60);
-  document.getElementById('clock_timer').textContent =
-    min + ':' + (sec < 10 ? '0' : '') + sec + ' min';
+    var min = Math.floor(totalSek / 60);
+    var sec = Math.floor(totalSek % 60);
+    var el5 = document.getElementById('clock_timer');
+    if (el5) el5.textContent = min + ':' + (sec < 10 ? '0' : '') + sec + ' min';
+  } catch(e) { console.error('Ticker:', e); }
 }
 _tickNow();
 setInterval(_tickNow, 50);
@@ -2238,7 +2241,6 @@ function updateFuture() {
 }
 
 // Wird von update() aufgerufen
-var bar1_val_global = 0, bar4_val_global = 0;
 
 function updatePsycho(s1, s3, bar1, bar4, years) {
   var vorteil = Math.round(s1 - s3);
