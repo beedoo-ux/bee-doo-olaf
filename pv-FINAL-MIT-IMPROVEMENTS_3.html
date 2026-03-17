@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- v3.1 -->
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -2180,6 +2181,7 @@ function _tickNow() {
   document.getElementById('clock_timer').textContent =
     min + ':' + (sec < 10 ? '0' : '') + sec + ' min';
 }
+_tickNow();
 setInterval(_tickNow, 50);
 
 // Warte-Kosten State
