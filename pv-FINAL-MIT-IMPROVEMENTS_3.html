@@ -2159,7 +2159,7 @@ var _clockOffset = 49 * 60; // 49 Minuten in Sekunden
 var _clockPageLoad = Date.now();
 
 function _tickNow() {
-  if (_clockPerSek === 0) return;
+  if (_clockPerSek === 0) _clockPerSek = 210 / 30 / 24 / 3600;
   var elapsed = (Date.now() - _clockPageLoad) / 1000;
   var totalSek = _clockOffset + elapsed;
   var val = totalSek * _clockPerSek;
