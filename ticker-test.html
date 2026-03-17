@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@900&display=swap" rel="stylesheet">
+<style>
+body { background: #111; color: white; padding: 40px; font-family: sans-serif; }
+#clock_display { font-family:'Syne',sans-serif; font-size: 60px; font-weight:900; color:#F0E15A; }
+#clock_liter, #clock_jahr, #clock_gespart { font-size:22px; color:#F0E15A; margin:8px 0; }
+#clock_timer { font-size:14px; color:#888; }
+</style>
+</head>
+<body>
+<div id="clock_timer">–</div>
+<div id="clock_display">–</div>
+<div id="clock_liter">–</div>
+<div id="clock_jahr">–</div>
+<div id="clock_gespart">–</div>
+
+<script>
+var _clockPerSek = 210 / 30 / 24 / 3600;
+var _clockOffset = 49 * 60;
+var _clockPageLoad = Date.now();
+var bar1 = 210, bar4 = 145;
+
+function tick() {
+  var sek = _clockOffset + (Date.now() - _clockPageLoad) / 1000;
+  var val = sek * _clockPerSek;
+  document.getElementById('clock_display').textContent = val.toLocaleString('de-DE',{minimumFractionDigits:5,maximumFractionDigits:5}) + ' €';
+  document.getElementById('clock_liter').textContent = (val/2).toLocaleString('de-DE',{minimumFractionDigits:5,maximumFractionDigits:5}) + ' L';
+  document.getElementById('clock_jahr').textContent = (bar1*12).toLocaleString('de-DE') + ' €';
+  document.getElementById('clock_gespart').textContent = ((bar1-bar4)*12).toLocaleString('de-DE') + ' €';
+  var min = Math.floor(sek/60);
+  var sec = Math.floor(sek%60);
+  document.getElementById('clock_timer').textContent = min+':'+(sec<10?'0':'')+sec+' min';
+}
+tick();
+setInterval(tick, 50);
+</script>
+</body>
+</html>
