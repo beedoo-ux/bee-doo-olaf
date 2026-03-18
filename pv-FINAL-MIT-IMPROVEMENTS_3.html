@@ -1199,6 +1199,7 @@ function calcEVHaushalt(pv_production, consumption) {
 
 var wpActive      = false;
 var _evQuote      = 40;  // PV-Eigenverbrauch WP Slider
+var EEG_YEARS     = 20;  // Einspeisevergütung läuft nach 20 Jahren aus
 var bar1_val_global = 0;
 var bar4_val_global = 0;
 var heizart       = 'gas';
@@ -1268,7 +1269,6 @@ function update() {
   document.getElementById('sc_years_label').textContent=YEARS;
 
   var FIN_YEARS=15;
-  var EEG_YEARS=20; // Einspeisung nur 20 Jahre
   var pvJahr=pv_monthly*12;
   var feedJahr=feed_kwh*feed_rate;
 
@@ -1976,7 +1976,7 @@ function updateWP() {
   for (var y4=0; y4<YEARS; y4++) {
     var pvRate   = (y4 < FIN_YEARS_PV) ? pv_monthly_val*12 : 0;
     var restKost = rest_kwh_calc * price_main * Math.pow(1+inflation_main/100, y4);
-    var wfeed = (y < EEG_YEARS) ? feedJahr_calc : 0;
+    var wfeed = (y4 < EEG_YEARS) ? feedJahr_calc : 0;
     stromMitPV  += pvRate + restKost - wfeed;
   }
 
