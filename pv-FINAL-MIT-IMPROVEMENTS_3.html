@@ -496,8 +496,8 @@
         <div class="unit">€ / Monat</div>
       </div>
       <div class="param-item">
-        <label>Preissteigerung p.a. — <span id="inflation_label" style="color:var(--gold);font-weight:700">3,5 %</span></label>
-        <input type="range" id="inflation" min="0" max="4" step="0.5" value="3.5" style="width:100%;accent-color:#F0E15A;cursor:pointer;height:6px;margin-top:8px;">
+        <label>Preissteigerung p.a. — <span id="inflation_label" style="color:var(--gold);font-weight:700">0 %</span></label>
+        <input type="range" id="inflation" min="0" max="4" step="0.5" value="0" style="width:100%;accent-color:#F0E15A;cursor:pointer;height:6px;margin-top:8px;">
         <div class="unit" style="display:flex;justify-content:space-between"><span>0 %</span><span>2 %</span><span>4 %</span></div>
       </div>
       <div class="param-group-title">Betrachtungszeitraum</div>
@@ -605,8 +605,8 @@
           </div>
           <div class="param-item">
             <!-- Preissteigerung Heizung: eigener Slider 0-4% -->
-            <label>Preissteigerung Heizung p.a. — <span id="wp_inflation_label" style="color:var(--gold);font-weight:700;">3,5 %</span></label>
-            <input type="range" id="wp_inflation" min="0" max="4" step="0.5" value="3.5" style="width:100%;accent-color:#F0E15A;cursor:pointer;height:6px;margin-top:8px;">
+            <label>Preissteigerung Heizung p.a. — <span id="wp_inflation_label" style="color:var(--gold);font-weight:700;">0 %</span></label>
+            <input type="range" id="wp_inflation" min="0" max="4" step="0.5" value="0" style="width:100%;accent-color:#F0E15A;cursor:pointer;height:6px;margin-top:8px;">
             <div class="unit">% / Jahr (0–4 %)</div>
           </div>
 
@@ -1311,7 +1311,7 @@ function update() {
   var heizGesamt_s1 = 0, heizMonat_s1 = 0, heizBase_s1 = 0;
   if (wpActive) {
     var cfg_s1     = heizartConfig[heizart];
-    var wpInfl_s1  = parseFloat(document.getElementById('wp_inflation').value)||3.5;
+    var wpInfl_s1  = parseFloat(document.getElementById('wp_inflation').value)||0;
     var wpVerb_s1  = parseFloat(document.getElementById('wp_verbrauch').value)||cfg_s1.defaultVerbrauch;
     var wpPreis_s1 = parseFloat(document.getElementById('wp_preis').value)||cfg_s1.defaultPreis;
     var wpWart_s1  = parseFloat(document.getElementById('wp_wartung').value)||300;
@@ -1323,7 +1323,7 @@ function update() {
   for(var y=0;y<YEARS;y++){
     var strom_s1 = stromJahr(consumption,price,base,inflation,y);
     s1_strom_only += strom_s1;
-    var heiz_s1 = wpActive ? heizBase_s1 * Math.pow(1+(parseFloat(document.getElementById('wp_inflation').value)||3.5)/100, y) : 0;
+    var heiz_s1 = wpActive ? heizBase_s1 * Math.pow(1+(parseFloat(document.getElementById('wp_inflation').value)||0)/100, y) : 0;
     s1 += strom_s1 + heiz_s1;
 
     var rest=restJahr(rest_kwh,price,inflation,y);
@@ -1480,7 +1480,7 @@ function update() {
   if (be_alt >= be_neu) {
     breakEvenMonat = 1;
   } else {
-    var wpInfl_be = wpActive ? (parseFloat(document.getElementById('wp_inflation').value)||3.5) : 0;
+    var wpInfl_be = wpActive ? (parseFloat(document.getElementById('wp_inflation').value)||0) : 0;
     for (var mo = 0; mo < 360; mo++) {
       var be_jahr   = Math.floor(mo / 12);
       var be_strom  = stromJahr(consumption, price, base, inflation, be_jahr) / 12;
@@ -1677,7 +1677,7 @@ function update() {
   var snaps=[];
   for(var y2=0;y2<YEARS;y2++){
     var yS1    = stromJahr(consumption,price,base,inflation,y2);
-    var yHeiz  = wpActive ? heizBase_s1 * Math.pow(1+(parseFloat(document.getElementById('wp_inflation').value)||3.5)/100, y2) : 0;
+    var yHeiz  = wpActive ? heizBase_s1 * Math.pow(1+(parseFloat(document.getElementById('wp_inflation').value)||0)/100, y2) : 0;
     var yRest  = restJahr(rest_kwh,price,inflation,y2);
     var yRate  = (y2<FIN_YEARS)?pvJahr:0;
     var yWPrate = wpActive ? ((y2<WP_FIN_YEARS) ? wp_extra_rate*12 : 0) : 0;
@@ -1784,7 +1784,7 @@ function update() {
   if (m0_boerse >= pv_boerse_m) {
     breakEvenMonat2 = 1;
   } else {
-    var wpInfl_be2 = wpActive ? (parseFloat(document.getElementById('wp_inflation').value)||3.5) : 0;
+    var wpInfl_be2 = wpActive ? (parseFloat(document.getElementById('wp_inflation').value)||0) : 0;
     for (var mo2 = 0; mo2 < 360; mo2++) {
       var j2 = Math.floor(mo2 / 12);
       var be2_strom = stromJahr(consumption, price, base, inflation, j2) / 12;
@@ -1951,7 +1951,7 @@ function updateWP() {
 
   // Kumulierte Stromkosten OHNE PV (Haushalt, mit Inflation) über Betrachtungszeitraum
   var price_main     = parseFloat(document.getElementById('price').value)||0.34;
-  var inflation_main = parseFloat(document.getElementById('wp_inflation').value)||3.5;
+  var inflation_main = parseFloat(document.getElementById('wp_inflation').value)||0;
   var consumption    = parseFloat(document.getElementById('consumption').value)||7000;
   var base_main      = parseFloat(document.getElementById('base').value)||12;
   var stromOhnePV    = 0;
@@ -2047,7 +2047,7 @@ function updateBreakEven(heizMonat, wpRate, wpKwhJahr, feedJahrKorr) {
   var price       = parseFloat(document.getElementById('price').value)||0.34;
   var consumption = parseFloat(document.getElementById('consumption').value)||7000;
   var base        = parseFloat(document.getElementById('base').value)||12;
-  var inflation   = parseFloat(document.getElementById('wp_inflation').value)||3.5;
+  var inflation   = parseFloat(document.getElementById('wp_inflation').value)||0;
   var pv_monthly  = parseFloat(document.getElementById('pv_monthly').value)||186;
   var feed_rate   = parseFloat(document.getElementById('feed_rate').value)||0.079;
   var pv_production = parseFloat(document.getElementById('pv_production').value)||9000;
@@ -2067,7 +2067,7 @@ function updateBreakEven(heizMonat, wpRate, wpKwhJahr, feedJahrKorr) {
   if (be_alt >= be_neu) {
     breakEvenMonat = 1;
   } else {
-    var wpInfl = parseFloat(document.getElementById('wp_inflation').value)||3.5;
+    var wpInfl = parseFloat(document.getElementById('wp_inflation').value)||0;
     for (var mo=0; mo<360; mo++) {
       var bj = Math.floor(mo/12);
       var bs = stromJahr(consumption, price, base, inflation, bj) / 12;
