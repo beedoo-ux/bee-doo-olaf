@@ -1268,6 +1268,7 @@ function update() {
   document.getElementById('sc_years_label').textContent=YEARS;
 
   var FIN_YEARS=15;
+  var EEG_YEARS=20; // Einspeisung nur 20 Jahre
   var pvJahr=pv_monthly*12;
   var feedJahr=feed_kwh*feed_rate;
 
@@ -1331,7 +1332,8 @@ function update() {
     var wp_rate_jahr   = wpActive ? ((y<WP_FIN_YEARS) ? wp_extra_rate*12 : 0) : 0;
     var wp_reststrom_j = wpActive ? wp_extra_kwh * price * Math.pow(1+inflation/100,y) : 0;
     s2+=rate+rest+wp_rate_jahr+wp_reststrom_j;
-    s3+=rate+rest-feedJahr+wp_rate_jahr+wp_reststrom_j;
+    var feed_j = (y < EEG_YEARS) ? feedJahr : 0;
+    s3+=rate+rest-feed_j+wp_rate_jahr+wp_reststrom_j;
     chartLabels.push('J.'+(y+1));
     chartS1.push(Math.round(s1));
     chartS2.push(Math.round(s2));
@@ -1384,7 +1386,7 @@ function update() {
 
   var feedYearsActual=Math.min(YEARS,20);
   document.getElementById('diff1').textContent=fmtEur(s1-s2);
-  document.getElementById('diff2').textContent=fmtEur(feedJahr*feedYearsActual);
+  document.getElementById('diff2').textContent=fmtEur(feedJahr*Math.min(YEARS,EEG_YEARS));
   document.getElementById('diff3').textContent=fmtEur(s1-s3);
 
   // WP-Diff-Box: einfach s1 (rot) minus s3 (grün) = echter Gesamtvorteil
@@ -1684,7 +1686,8 @@ function update() {
     var yWPrest = wpActive ? wp_extra_kwh * price * Math.pow(1+inflation/100,y2) : 0;
     cum1 += yS1 + yHeiz;
     cum2 += yRate + yRest + yWPrate + yWPrest;
-    cum3 += yRate + yRest - feedJahr + yWPrate + yWPrest;
+    var yfeed = (y2 < EEG_YEARS) ? feedJahr : 0;
+    cum3 += yRate + yRest - yfeed + yWPrate + yWPrest;
     if(milestones.indexOf(y2+1)!==-1){
       snaps.push({yr:y2+1,c1:cum1,c2:cum2,c3:cum3,
         isTotal:(y2+1===YEARS),isTurning:(y2+1===FIN_YEARS)});
@@ -1754,7 +1757,8 @@ function update() {
     var bRate   = (yb<FIN_YEARS)?pvJahr:0;
     var bWPrate = wpActive ? ((yb<WP_FIN_YEARS) ? wp_extra_rate*12 : 0) : 0;
     var bWPrest = wpActive ? wp_extra_kwh * boerse_price : 0; // WP-Rest zu Börse
-    b_pv_boerse += bRate + rest_kwh*boerse_price - feedJahr + bWPrate + bWPrest;
+    var bfeed = (yb < EEG_YEARS) ? feedJahr : 0;
+    b_pv_boerse += bRate + rest_kwh*boerse_price - bfeed + bWPrate + bWPrest;
   }
   // Reststrom-Anzeige: Haushalt + WP zusammen
   var rest_kwh_ges = rest_kwh + (wpActive ? Math.round(wp_extra_kwh) : 0);
@@ -1972,7 +1976,8 @@ function updateWP() {
   for (var y4=0; y4<YEARS; y4++) {
     var pvRate   = (y4 < FIN_YEARS_PV) ? pv_monthly_val*12 : 0;
     var restKost = rest_kwh_calc * price_main * Math.pow(1+inflation_main/100, y4);
-    stromMitPV  += pvRate + restKost - feedJahr_calc;
+    var wfeed = (y < EEG_YEARS) ? feedJahr_calc : 0;
+    stromMitPV  += pvRate + restKost - wfeed;
   }
 
   // Einzelne Ersparnis-Komponenten
