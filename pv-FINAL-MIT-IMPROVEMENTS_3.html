@@ -1835,7 +1835,7 @@ function update() {
   updatePsycho(s1, s3, bar1_val, bar4_val, YEARS);
 }
 
-var inputs=document.querySelectorAll('input:not(#customer_name):not(#wp_verbrauch):not(#wp_preis):not(#wp_wartung):not(#wp_rate):not(#wp_jaz):not(#wp_invest):not(#wp_inflation):not(#wp_eigenverbrauch_quote)');
+var inputs=document.querySelectorAll('input:not(#customer_name):not(#wp_verbrauch):not(#wp_preis):not(#wp_wartung):not(#wp_rate):not(#wp_jaz):not(#wp_invest):not(#wp_eigenverbrauch_quote)');
 for(var i=0;i<inputs.length;i++) inputs[i].addEventListener('input',update);
 update();
 
@@ -1882,7 +1882,7 @@ function updateWP() {
 
   var cfg         = heizartConfig[heizart];
   var YEARS       = parseInt(document.getElementById('years').value) || 20;
-  var wpInfl      = parseFloat(document.getElementById('wp_inflation').value) || 5;
+  var wpInfl      = parseFloat(document.getElementById('wp_inflation').value) || 0;
   var price       = parseFloat(document.getElementById('price').value) || 0.34;
   var consumption_wp = parseFloat(document.getElementById('consumption').value) || 7000;
   var pv_prod_wp     = parseFloat(document.getElementById('pv_production').value) || 9000;
