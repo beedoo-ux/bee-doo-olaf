@@ -679,11 +679,11 @@
                 <div class="wh-icon">🚫</div>
                 <div class="wh-label">Keine</div>
               </div>
-              <div class="wp-heizart-btn active" id="btn_f30" onclick="setFoerderung(30)">
+              <div class="wp-heizart-btn active" id="btn_f35" onclick="setFoerderung(35)">
                 <div class="wh-icon">🟢</div>
                 <div class="wh-label">30 %</div>
               </div>
-              <div class="wp-heizart-btn" id="btn_f50" onclick="setFoerderung(50)">
+              <div class="wp-heizart-btn" id="btn_f55" onclick="setFoerderung(55)">
                 <div class="wh-icon">🟡</div>
                 <div class="wh-label">50 %</div>
               </div>
@@ -1203,7 +1203,7 @@ var EEG_YEARS     = 20;  // Einspeisevergütung läuft nach 20 Jahren aus
 var bar1_val_global = 0;
 var bar4_val_global = 0;
 var heizart       = 'gas';
-var foerderung    = 30;
+var foerderung    = 35;
 var g_wp_extra_kwh  = 0;
 var g_wp_extra_rate = 0;
 var g_heiz_monat    = 0;
@@ -1871,7 +1871,7 @@ function setHeizart(art) {
 
 function setFoerderung(pct) {
   foerderung = pct;
-  ['f0','f30','f50','f70'].forEach(function(id){ document.getElementById('btn_'+id).classList.remove('active'); });
+  ['f0','f35','f55','f70'].forEach(function(id){ document.getElementById('btn_'+id).classList.remove('active'); });
   document.getElementById('btn_f' + pct).classList.add('active');
   updateWP();
 }
@@ -1928,12 +1928,13 @@ function updateWP() {
   document.getElementById('wp_strompreis_label').textContent   = price.toLocaleString('de-DE', {minimumFractionDigits:2});
 
   // Förderung
-  var foerderEur    = wpInvest * foerderung / 100;
+  var foerderBasis  = Math.min(wpInvest, 30000); // Förderung max. auf 30.000€ gedeckelt
+  var foerderEur    = foerderBasis * foerderung / 100;
   var wpInvestNetto = wpInvest - foerderEur;
   var wpRateNetto   = wpRateBrutto * (1 - foerderung/100);
 
   document.getElementById('wp_foerder_eur').textContent  = fmtEur(foerderEur);
-  document.getElementById('wp_foerder_pct').textContent  = foerderung + ' % von ' + fmtEur(wpInvest);
+  document.getElementById('wp_foerder_pct').textContent  = foerderung + ' % von ' + fmtEur(foerderBasis) + (wpInvest > 30000 ? ' (gedeckelt)' : '');
   document.getElementById('wp_netto_invest').textContent = fmtEur(wpInvestNetto);
   document.getElementById('wp_rate_netto').textContent   = fmtEur(wpRateNetto);
 
