@@ -13,16 +13,16 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root {
-    --gold:#F0E15A; --gold-dark:#C8B93A; --gold-light:#FBF5C0;
-    --dark:#1A1A1A; --dark2:#111111; --card:#222222; --card2:#2D2D2D;
+    --gold:#C8A000; --gold-dark:#A07800; --gold-light:#FBF5C0;
+    --dark:#1A1A1A; --dark2:#F5F5F3; --card:#FFFFFF; --card2:#F0EEE8;
     --red:#C0392B; --green:#1D8349; --blue:#2471A3;
-    --muted:#6B6B6B; --muted2:#9A9A9A; --text:#F5F5F5;
-    --border:rgba(240,225,90,0.12); --border2:rgba(240,225,90,0.22);
+    --muted:#888888; --muted2:#AAAAAA; --text:#1A1A1A;
+    --border:rgba(0,0,0,0.10); --border2:rgba(0,0,0,0.18);
     --charcoal:#2D2D2D; --cream:#FEFCE8;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{background:var(--dark2);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
-  body::before{content:'';position:fixed;top:-300px;right:-200px;width:700px;height:700px;background:radial-gradient(circle,rgba(240,225,90,0.07) 0%,transparent 65%);pointer-events:none;animation:glow 6s ease-in-out infinite;}
+  body::before{display:none;}
   @keyframes glow{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.6;transform:scale(1.08)}}
 
   /* BEE-DOO NAVBAR */
