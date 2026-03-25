@@ -2,23 +2,6 @@
 <!-- v1773769171 -->
 <html lang="de">
 <head>
-<script>
-(function(){
-  var pw = localStorage.getItem('bd_auth');
-  if (pw !== 'beedoo2026') {
-    document.documentElement.style.display = 'none';
-    var entered = prompt('Bitte Passwort eingeben:');
-    if (entered === 'beedoo2026') {
-      localStorage.setItem('bd_auth', 'beedoo2026');
-      document.documentElement.style.display = '';
-    } else {
-      document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;font-size:18px;color:#888;">Falsches Passwort.</div>';
-      document.documentElement.style.display = '';
-    }
-  }
-})();
-</script>
-
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -459,6 +442,44 @@
   @keyframes tickerPulse { 0%,100%{opacity:.3;width:40px} 50%{opacity:1;width:120px} }
   @media print{ body{background:#fff;color:#000;} .container{padding:20px;}}
 </style>
+<style>
+#bd-login{position:fixed;inset:0;z-index:99999;background:#F5F5F3;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;}
+#bd-login .box{background:#fff;border:1px solid #E0E0E0;border-radius:20px;padding:48px 40px;width:360px;text-align:center;}
+#bd-login .logo{font-family:'Syne',sans-serif;font-size:28px;font-weight:900;color:#1A1A1A;margin-bottom:4px;}
+#bd-login .logo span{color:#C8A000;}
+#bd-login .sub{font-size:13px;color:#888;margin-bottom:32px;}
+#bd-login input{width:100%;box-sizing:border-box;padding:14px 16px;border:1.5px solid #E0E0E0;border-radius:12px;font-size:16px;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:12px;}
+#bd-login input:focus{border-color:#C8A000;}
+#bd-login button{width:100%;padding:14px;background:#C8A000;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;}
+#bd-login button:hover{background:#A07800;}
+#bd-login .err{color:#C0392B;font-size:13px;margin-top:8px;display:none;}
+</style>
+<div id="bd-login">
+  <div class="box">
+    <div class="logo">bee-<span>doo</span></div>
+    <div class="sub">PV-Entscheidungsrechner · Intern</div>
+    <input type="password" id="bd-pw" placeholder="Passwort eingeben" onkeydown="if(event.key==='Enter')bdCheck()">
+    <button onclick="bdCheck()">Weiter →</button>
+    <div class="err" id="bd-err">Falsches Passwort</div>
+  </div>
+</div>
+<script>
+(function(){
+  if(localStorage.getItem('bd_auth')==='ok'){
+    document.getElementById('bd-login').style.display='none';
+  }
+})();
+function bdCheck(){
+  if(document.getElementById('bd-pw').value==='beedoo2026'){
+    localStorage.setItem('bd_auth','ok');
+    document.getElementById('bd-login').style.display='none';
+  } else {
+    document.getElementById('bd-err').style.display='block';
+    document.getElementById('bd-pw').value='';
+    document.getElementById('bd-pw').focus();
+  }
+}
+</script>
 </head>
 <body>
 
