@@ -442,44 +442,93 @@
   @keyframes tickerPulse { 0%,100%{opacity:.3;width:40px} 50%{opacity:1;width:120px} }
   @media print{ body{background:#fff;color:#000;} .container{padding:20px;}}
 </style>
+
+<!-- Supabase Auth -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 #bd-login{position:fixed;inset:0;z-index:99999;background:#F5F5F3;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;}
-#bd-login .box{background:#fff;border:1px solid #E0E0E0;border-radius:20px;padding:48px 40px;width:360px;text-align:center;}
+#bd-login .box{background:#fff;border:1px solid #E0E0E0;border-radius:20px;padding:48px 40px;width:380px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,0.06);}
 #bd-login .logo{font-family:'Syne',sans-serif;font-size:28px;font-weight:900;color:#1A1A1A;margin-bottom:4px;}
 #bd-login .logo span{color:#C8A000;}
 #bd-login .sub{font-size:13px;color:#888;margin-bottom:32px;}
-#bd-login input{width:100%;box-sizing:border-box;padding:14px 16px;border:1.5px solid #E0E0E0;border-radius:12px;font-size:16px;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:12px;}
+#bd-login .field{margin-bottom:12px;text-align:left;}
+#bd-login .field label{font-size:12px;color:#555;display:block;margin-bottom:4px;font-weight:600;letter-spacing:0.5px;}
+#bd-login input{width:100%;box-sizing:border-box;padding:13px 16px;border:1.5px solid #E0E0E0;border-radius:12px;font-size:15px;font-family:'DM Sans',sans-serif;outline:none;}
 #bd-login input:focus{border-color:#C8A000;}
-#bd-login button{width:100%;padding:14px;background:#C8A000;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;}
+#bd-login button{width:100%;padding:14px;background:#C8A000;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;margin-top:8px;}
 #bd-login button:hover{background:#A07800;}
-#bd-login .err{color:#C0392B;font-size:13px;margin-top:8px;display:none;}
+#bd-login button:disabled{background:#ccc;cursor:not-allowed;}
+#bd-login .err{color:#C0392B;font-size:13px;margin-top:10px;min-height:18px;}
+#bd-login .hint{font-size:11px;color:#aaa;margin-top:16px;}
 </style>
-<div id="bd-login">
+<div id="bd-login" style="display:none;">
   <div class="box">
     <div class="logo">bee-<span>doo</span></div>
-    <div class="sub">PV-Entscheidungsrechner · Intern</div>
-    <input type="password" id="bd-pw" placeholder="Passwort eingeben" onkeydown="if(event.key==='Enter')bdCheck()">
-    <button onclick="bdCheck()">Weiter →</button>
-    <div class="err" id="bd-err">Falsches Passwort</div>
+    <div class="sub">PV-Entscheidungsrechner · Anmelden</div>
+    <div class="field"><label>E-MAIL</label><input type="email" id="bd-email" placeholder="name@bee-doo.de" autocomplete="email"></div>
+    <div class="field"><label>PASSWORT</label><input type="password" id="bd-pw" placeholder="Passwort" autocomplete="current-password" onkeydown="if(event.key==='Enter')bdLogin()"></div>
+    <button id="bd-btn" onclick="bdLogin()">Anmelden →</button>
+    <div class="err" id="bd-err"></div>
+    <div class="hint">Nur für bee-doo Mitarbeiter</div>
   </div>
 </div>
 <script>
-(function(){
-  if(localStorage.getItem('bd_auth')==='ok'){
-    document.getElementById('bd-login').style.display='none';
+var SUPABASE_URL = 'https://supabase.bee-doo.de';
+var SUPABASE_ANON = 'eyJ0eXAiOiAiSldUIiwgImFsZyI6ICJIUzI1NiJ9.eyJpc3MiOiAic3VwYWJhc2UiLCAiaWF0IjogMTc3MzY1OTUyMCwgImV4cCI6IDQ5MjkzMzMxMjAsICJyb2xlIjogImFub24ifQ.KKj6Vlg1r5oMoTnQY711Vd079l4tGO15B12JcoAII5g';
+var _sb = null;
+
+function initSupabase() {
+  if (window.supabase && window.supabase.createClient) {
+    _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+    return true;
   }
-})();
-function bdCheck(){
-  if(document.getElementById('bd-pw').value==='beedoo2026'){
-    localStorage.setItem('bd_auth','ok');
-    document.getElementById('bd-login').style.display='none';
-  } else {
-    document.getElementById('bd-err').style.display='block';
-    document.getElementById('bd-pw').value='';
-    document.getElementById('bd-pw').focus();
+  return false;
+}
+
+async function bdCheckSession() {
+  if (!initSupabase()) return showLogin();
+  try {
+    var res = await _sb.auth.getSession();
+    var session = res.data && res.data.session;
+    if (session && session.user) {
+      hideLogin();
+    } else {
+      showLogin();
+    }
+  } catch(e) { showLogin(); }
+}
+
+function showLogin() { document.getElementById('bd-login').style.display = 'flex'; }
+function hideLogin() { document.getElementById('bd-login').style.display = 'none'; }
+
+async function bdLogin() {
+  var email = document.getElementById('bd-email').value.trim();
+  var pw = document.getElementById('bd-pw').value;
+  var err = document.getElementById('bd-err');
+  var btn = document.getElementById('bd-btn');
+  err.textContent = '';
+  if (!email || !pw) { err.textContent = 'Bitte Email und Passwort eingeben.'; return; }
+  btn.disabled = true; btn.textContent = 'Anmelden...';
+  try {
+    var res = await _sb.auth.signInWithPassword({ email: email, password: pw });
+    if (res.error) {
+      err.textContent = 'Falsche Email oder Passwort.';
+      btn.disabled = false; btn.textContent = 'Anmelden →';
+    } else {
+      hideLogin();
+    }
+  } catch(e) {
+    err.textContent = 'Verbindungsfehler. Bitte nochmal versuchen.';
+    btn.disabled = false; btn.textContent = 'Anmelden →';
   }
 }
+
+// Beim Laden prüfen
+window.addEventListener('load', function() {
+  setTimeout(bdCheckSession, 500);
+});
 </script>
+
 </head>
 <body>
 
